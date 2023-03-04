@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Forecast</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_settings">Settings</string>
+    <string name="title_favorite">Favorite</string>
+    <string name="title_week">Week</string>
+    <string name="tv_wind">الرياح</string>
+    <string name="tv_pressure">الضغط</string>
+    <string name="tv_humidity">الرطوبة</string>
+    <string name="tv_settings">الإعدادات</string>
+    <string name="tv_language">اللغة</string>
+    <string name="rb_arabic">العربية</string>
+    <string name="rb_english">الإنجليزية</string>
+</resources>
