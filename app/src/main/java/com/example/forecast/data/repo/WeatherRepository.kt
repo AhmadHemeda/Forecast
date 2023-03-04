@@ -2,7 +2,7 @@ package com.example.forecast.data.repo
 
 import com.example.forecast.data.network.OpenWeatherClient
 
-class WeatherRepository {
+class WeatherRepository() {
 
 /*
 suspend fun getCurrentWeather(

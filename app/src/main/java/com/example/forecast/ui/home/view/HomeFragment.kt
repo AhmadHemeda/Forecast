@@ -209,8 +209,6 @@ unit
 
         binding.textViewDescription.text = openWeatherResponse.current?.weather?.get(0)?.description
 
-        binding.textViewCity.text = openWeatherResponse.timezone
-
         val iconLink =
             "https://openweathermap.org/img/wn/${openWeatherResponse.current?.weather?.get(0)?.icon}@2x.png"
         Glide.with(requireContext()).load(iconLink).into(binding.imageViewConditionIcon)

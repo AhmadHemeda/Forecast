@@ -1,8 +1,10 @@
 package com.example.forecast
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
@@ -10,6 +12,7 @@ import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.Looper
+import android.provider.Settings
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -20,14 +23,16 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.forecast.data.utils.Constants.Companion.LATITUDE
+import com.example.forecast.data.utils.Constants.Companion.LONGITUDE
+import com.example.forecast.data.utils.Constants.Companion.PERMISSION_ID
+import com.example.forecast.data.utils.Constants.Companion.SHARED_PREFERENCE
 import com.example.forecast.databinding.ActivityMainBinding
 import com.google.android.gms.location.*
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    private val PERMISSION_ID = 1010
 
     private lateinit var binding: ActivityMainBinding
 
@@ -54,78 +59,61 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
-        requestPermission()
         getLastLocation()
     }
 
-    @SuppressLint("MissingPermission", "SetTextI18n", "UnlocalizedSms", "QueryPermissionsNeeded", "IntentReset")
-    fun getLastLocation() {
+    private fun getLastLocation() {
         if (checkPermission()) {
             if (isLocationEnabled()) {
-                fusedLocationProviderClient.lastLocation.addOnCompleteListener { task ->
-                    val location: Location? = task.result
-                    if (location == null) {
-                        newLocationData()
-                    } else {
-//                        locationTextView.text =
-//                            "You Current Location is :" + "\n" +
-//                                    "Long: " + location.longitude + "\n" +
-//                                    "Lat: " + location.latitude + "\n" +
-//                                    "City: " + getCityName(
-//                                location.latitude,
-//                                location.longitude
-//                            )
-//
-//                        sendSMSButton.setOnClickListener {
-//                            val phoneNumber = "01099180334"
-//                            val address = getCityName(
-//                                location.latitude,
-//                                location.longitude
-//                            )
-//
-//                            sendSMS(address, phoneNumber)
-//                        }
+
+                val fusedLocationProviderClient =
+                    LocationServices.getFusedLocationProviderClient(this)
+                val locationCallback: LocationCallback
+
+                val locationRequest: LocationRequest =
+                    LocationRequest.Builder(
+                        Priority.PRIORITY_HIGH_ACCURACY,
+                        TimeUnit.MINUTES.toMillis(5)
+                    ).apply {
+                        setGranularity(Granularity.GRANULARITY_PERMISSION_LEVEL)
+                        setDurationMillis(TimeUnit.MINUTES.toMillis(5))
+                        setWaitForAccurateLocation(true)
+                        setMaxUpdates(1)
+                    }.build()
+
+                locationCallback = object : LocationCallback() {
+                    override fun onLocationResult(p0: LocationResult) {
+                        super.onLocationResult(p0)
+                        val currentLocation: Location? = p0.lastLocation
+                        currentLocation?.latitude
+
+                        currentLocation?.time
+                        val sharedPreferences: SharedPreferences =
+                            getSharedPreferences(SHARED_PREFERENCE, Context.MODE_PRIVATE)
+                        val editor: SharedPreferences.Editor = sharedPreferences.edit()
+
+                        editor.putString(LATITUDE, currentLocation?.latitude.toString())
+                        editor.putString(LONGITUDE, currentLocation?.longitude.toString())
+                        editor.apply()
                     }
                 }
+
+                fusedLocationProviderClient.requestLocationUpdates(
+                    locationRequest,
+                    locationCallback,
+                    Looper.getMainLooper()
+                )
+
             } else {
-                Toast.makeText(this, "Please Turn on Your device Location", Toast.LENGTH_SHORT)
-                    .show()
+                requestLocationEnable()
             }
         } else {
-            requestPermission()
-        }
-    }
-
-    @SuppressLint("MissingPermission", "VisibleForTests")
-    fun newLocationData() {
-        val locationRequest = LocationRequest()
-        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        locationRequest.interval = 0
-        locationRequest.fastestInterval = 0
-        locationRequest.numUpdates = 1
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
-        fusedLocationProviderClient.requestLocationUpdates(
-            locationRequest, locationCallback, Looper.myLooper()
-        )
-    }
-
-    private val locationCallback = object : LocationCallback() {
-        @SuppressLint("SetTextI18n")
-        override fun onLocationResult(locationResult: LocationResult) {
-            val lastLocation: Location? = locationResult.lastLocation
-//            locationTextView.text =
-//                "You Last Location is : Long: " + lastLocation.longitude + "\n" + " , Lat: " + lastLocation.latitude + "\n" + getCityName(
-//                    lastLocation.latitude,
-//                    lastLocation.longitude
-//                )
+            requestLocationPermission()
+            getLastLocation()
         }
     }
 
     private fun checkPermission(): Boolean {
-        //this function will return a boolean
-        //true: if we have permission
-        //false if not
         if (
             ActivityCompat.checkSelfPermission(
                 this,
@@ -142,37 +130,42 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
-    private fun requestPermission() {
-        //this function will allows us to tell the user to request the necessary permission if they are not garented
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(
-                android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                android.Manifest.permission.ACCESS_FINE_LOCATION
-            ),
-            PERMISSION_ID
-        )
-    }
-
     private fun isLocationEnabled(): Boolean {
-        //this function will return to us the state of the location service
-        //if the gps or the network provider is enabled then it will return true otherwise it will return false
         val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
             LocationManager.NETWORK_PROVIDER
         )
     }
 
-    @SuppressLint("MissingSuperCall")
+    private fun requestLocationEnable() {
+        val gpsOptionsIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+        startActivity(gpsOptionsIntent)
+    }
+
+    private fun requestLocationPermission() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ), PERMISSION_ID
+        )
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
         grantResults: IntArray,
     ) {
-        if (requestCode == PERMISSION_ID) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLastLocation()
-            }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_ID &&
+            permissions.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+            grantResults[1] == PackageManager.PERMISSION_GRANTED
+        ) {
+            getLastLocation()
+        } else {
+            checkPermission()
         }
     }
 

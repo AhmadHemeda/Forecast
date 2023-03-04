@@ -13,7 +13,7 @@ private const val TAG = "HomeViewModel"
 class HomeViewModel : ViewModel() {
 
     var weatherLiveData = MutableLiveData<OpenWeatherResponse>()
-    val weatherRepository = WeatherRepository()
+    private val weatherRepository = WeatherRepository()
 
 /*
 fun getCurrentWeather(latitude: Double, longitude: Double, key: String, unit: String) {
