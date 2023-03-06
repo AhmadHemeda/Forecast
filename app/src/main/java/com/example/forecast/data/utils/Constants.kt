@@ -11,8 +11,11 @@ class Constants {
         const val LONGITUDE = "LONGITUDE"
         const val LATITUDE = "LATITUDE"
         const val LANGUAGE = "LANGUAGE"
-        const val LAT_LONG = "LAT_LONG"
         const val TEMPERATURE = "TEMPERATURE"
         const val WIND_SPEED = "WIND_SPEED"
+        const val NOTIFICATION_ID = 1
+        const val CHANNEL_ID = "CHANNEL_ID"
+        const val TITLE_EXTRA = "TITLE_EXTRA"
+        const val MESSAGE_EXTRA = "MESSAGE_EXTRA"
     }
 }

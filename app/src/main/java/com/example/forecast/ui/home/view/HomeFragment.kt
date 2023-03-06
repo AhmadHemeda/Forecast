@@ -182,8 +182,6 @@ unit
         unit: String,
         wind: String?
     ) {
-
-
         val tempUnit: String = when (unit) {
             "stander" -> " K"
             "metric" -> " °C"
@@ -205,7 +203,8 @@ unit
             openWeatherResponse.current?.windSpeed.toString().plus(windSpeedUnit)
 
         binding.textViewHumidity.text = openWeatherResponse.current?.humidity.toString().plus(" %")
-        binding.textViewPressure.text = openWeatherResponse.current?.pressure.toString().plus(" hPa")
+        binding.textViewPressure.text =
+            openWeatherResponse.current?.pressure.toString().plus(" hPa")
 
         binding.textViewDescription.text = openWeatherResponse.current?.weather?.get(0)?.description
 

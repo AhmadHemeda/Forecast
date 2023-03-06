@@ -21,7 +21,7 @@
         tools:layout="@layout/fragment_favorite" />
     <fragment
         android:id="@+id/notificationsFragment"
-        android:name="com.example.forecast.ui.notifications.NotificationsFragment"
+        android:name="com.example.forecast.ui.notifications.view.NotificationsFragment"
         android:label="fragment_notifications"
         tools:layout="@layout/fragment_notifications" />
     <fragment

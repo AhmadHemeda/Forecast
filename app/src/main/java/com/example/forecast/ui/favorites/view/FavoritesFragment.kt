@@ -1,20 +1,16 @@
 package com.example.forecast.ui.favorites.view
 
 import android.content.Intent
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.Toast
-import androidx.lifecycle.Observer
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.forecast.R
 import com.example.forecast.data.model.FavoriteCity
-import com.example.forecast.data.model.OpenWeatherResponse
-import com.example.forecast.data.utils.Constants.Companion.LAT_LONG
+import com.example.forecast.data.utils.Constants.Companion.LATITUDE
+import com.example.forecast.data.utils.Constants.Companion.LONGITUDE
 import com.example.forecast.databinding.FragmentFavoriteBinding
 import com.example.forecast.ui.favorites.viewmodel.FavoritesViewModel
 import com.example.forecast.ui.favorites.viewmodel.FavoritesViewModelFactory
@@ -40,18 +36,17 @@ class FavoritesFragment : Fragment() {
         _binding = FragmentFavoriteBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val response = OpenWeatherResponse()
-
         binding.floatingActionButtonMap.setOnClickListener {
             val intent = Intent(requireContext(), MapsActivity::class.java)
-            intent.putExtra(LAT_LONG, response)
-
             startActivity(intent)
         }
 
         val listener = object : FavoriteCityAdapter.OnCityClickListener {
             override fun onCityClick(city: FavoriteCity) {
-                Toast.makeText(requireContext(), "${city.latitude}", Toast.LENGTH_SHORT).show()
+                val intent = Intent(requireContext(), FavoritesActivity::class.java)
+                intent.putExtra(LATITUDE, city.latitude)
+                intent.putExtra(LONGITUDE, city.longitude)
+                startActivity(intent)
             }
         }
 

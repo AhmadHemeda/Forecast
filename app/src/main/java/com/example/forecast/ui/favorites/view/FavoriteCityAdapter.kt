@@ -49,6 +49,10 @@ class FavoriteCityAdapter(val context: Context, onCityClickListener: OnCityClick
         holder.itemView.setOnClickListener {
             listener.onCityClick(city)
         }
+
+        holder.favoriteCityItemBinding.imageButtonDelete.setOnClickListener {
+            listener.onCityClick(city)
+        }
     }
 
     override fun getItemCount(): Int {

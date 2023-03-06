@@ -43,10 +43,10 @@ Log.d(TAG, "getCurrentWeatherHourly: Fail")
 }
 */
 
-    fun getWeatherDetails(latitude: Double, longitude: Double, key: String, unit: String) {
+    fun getWeatherDetails(latitude: Double, longitude: Double, key: String, unit: String?) {
 
         viewModelScope.launch {
-            val response = weatherRepository.getWeatherDetails(latitude, longitude, key, unit)
+            val response = weatherRepository.getWeatherDetails(latitude, longitude, key, unit!!)
 
             if (response.isSuccessful) {
                 weatherLiveData.postValue(response.body())

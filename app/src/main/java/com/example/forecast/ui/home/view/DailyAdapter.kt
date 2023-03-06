@@ -44,10 +44,10 @@ class DailyAdapter(
         }
 
         holder.dailyItemBinding.textViewTemperatureDaily.text =
-            currentDailyWeatherResponse.temp.toString().plus(unit)
+            currentDailyWeatherResponse.temp.day.toInt().toString().plus(unit)
 
         holder.dailyItemBinding.textViewFeelsLikeTemperatureDaily.text =
-            currentDailyWeatherResponse.temp.toString().plus(unit)
+            currentDailyWeatherResponse.temp.day.toInt().toString().plus(unit)
 
         holder.dailyItemBinding.textViewDescriptionDaily.text =
             currentDailyWeatherResponse.weather[0].description

@@ -14,4 +14,4 @@ data class OpenWeatherResponse(
     val timezone: String = "",
     @SerializedName("timezone_offset")
     val timezoneOffset: Int = 0
-) : java.io.Serializable
+)
