@@ -1,5 +1,7 @@
 package com.example.forecast.ui.favorites.view
 
+import android.location.Address
+import android.location.Geocoder
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -21,6 +23,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.coroutines.launch
+import java.util.*
 
 private const val TAG = "MapsActivity"
 
@@ -29,7 +32,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mMap: GoogleMap
     private lateinit var dialogView: View
     private lateinit var buttonSave: Button
-    private lateinit var dialog: AlertDialog
+    private lateinit var alertDialog: AlertDialog
     private lateinit var textViewTitle: TextView
     private lateinit var binding: ActivityMapsBinding
     private lateinit var favoritesViewModel: FavoritesViewModel
@@ -45,7 +48,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         favoritesViewModel =
             ViewModelProvider(this, favoritesViewModelFactory)[FavoritesViewModel::class.java]
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -55,39 +57,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val builder = AlertDialog.Builder(this)
         builder.setView(dialogView)
 
-        dialog = builder.create()
-/*
-
-response = intent.getSerializableExtra(LAT_LONG) as OpenWeatherResponse
-
-if (!Places.isInitialized()) {
-Places.initialize(applicationContext, MAPS_API_KEY)
-}
-
-val autocompleteSupportFragment =
-supportFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
-
-autocompleteSupportFragment.setLocationBias(
-RectangularBounds.newInstance(
-LatLng(response.lat, response.lon),
-LatLng(response.lat, response.lon)
-)
-)
-
-autocompleteSupportFragment.setPlaceFields(
-listOf(
-Place.Field.ID,
-Place.Field.NAME,
-Place.Field.LAT_LNG
-)
-)
-*/
+        alertDialog = builder.create()
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        // Add a marker in Sydney and move the camera
         val latLng = LatLng(23.0, 24.0)
 
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng))
@@ -96,6 +71,18 @@ Place.Field.LAT_LNG
         mMap.setOnMapClickListener { latLng ->
             // Creating a marker
             val markerOptions = MarkerOptions()
+
+            val geocoder = Geocoder(this, Locale.getDefault())
+            val addresses: List<Address> = geocoder.getFromLocation(
+                latLng.latitude,
+                latLng.longitude, 1
+            ) as List<Address>
+
+            val cityName: String = if (addresses[0].locality.equals(null)) {
+                addresses[0].countryName
+            } else {
+                addresses[0].locality
+            }
 
             // Setting the position for the marker
             markerOptions.position(latLng)
@@ -109,7 +96,7 @@ Place.Field.LAT_LNG
             // Placing a marker on touched position
             googleMap.addMarker(markerOptions)
 
-            dialog.show()
+            alertDialog.show()
 
             textViewTitle = dialogView.findViewById(R.id.textView_title)
             textViewTitle.text = "${latLng.latitude}"
@@ -121,25 +108,20 @@ Place.Field.LAT_LNG
                         FavoriteCity(
                             latLng.latitude,
                             latLng.longitude,
-                            ""
+                            cityName
                         )
                     )
                 }
             }
-
         }
     }
-}
 
-//private fun showAlertDialog() {
-//
-//    MaterialAlertDialogBuilder(this)
-//        .setTitle("Alert")
-//        .setMessage("Do you want to add this city to your favorites?")
-//        .setNegativeButton("No") { _, _ ->
-//            Toast.makeText(this, "Back to map", Toast.LENGTH_SHORT).show()
-//        }
-//        .setPositiveButton("Yes") { _, _ ->
-//            Toast.makeText(this, "Go to favorites", Toast.LENGTH_SHORT).show()
-//        }
-//}
+    private fun getCityName(lat: Double, long: Double): String {
+        val cityName: String
+        val geoCoder = Geocoder(this, Locale.getDefault())
+        val address = geoCoder.getFromLocation(lat, long, 3)
+
+        cityName = address!![0].locality
+        return cityName
+    }
+}

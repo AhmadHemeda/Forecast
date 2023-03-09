@@ -6,6 +6,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import com.example.forecast.data.model.FavoriteCity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FavoriteCityDAO {
@@ -17,5 +18,5 @@ interface FavoriteCityDAO {
     suspend fun deleteCity(favoriteCity: FavoriteCity)
 
     @Query("SELECT * FROM favorite_city_table")
-    fun getAllFavoriteCities(): LiveData<List<FavoriteCity>>
+    fun getAllFavoriteCities(): Flow<List<FavoriteCity>>
 }

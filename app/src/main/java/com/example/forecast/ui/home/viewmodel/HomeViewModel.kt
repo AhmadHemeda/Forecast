@@ -5,53 +5,30 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.forecast.data.model.OpenWeatherResponse
+import com.example.forecast.data.network.ApiState
 import com.example.forecast.data.repo.WeatherRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 private const val TAG = "HomeViewModel"
 
 class HomeViewModel : ViewModel() {
 
-    var weatherLiveData = MutableLiveData<OpenWeatherResponse>()
+    private var _weatherLiveData = MutableStateFlow<ApiState>(ApiState.Loading)
+    val weatherLiveData: StateFlow<ApiState> = _weatherLiveData
     private val weatherRepository = WeatherRepository()
-
-/*
-fun getCurrentWeather(latitude: Double, longitude: Double, key: String, unit: String) {
-
-viewModelScope.launch {
-val response = weatherRepository.getCurrentWeather(latitude, longitude, key, unit)
-
-if (response.isSuccessful) {
-currentWeatherLiveData.postValue(response.body())
-} else {
-Log.d(TAG, "getCurrentWeather: Fail")
-}
-}
-}
-
-fun getCurrentWeatherHourly(lat: Double, lon: Double, apikey: String, unit: String) {
-
-viewModelScope.launch {
-val response = weatherRepository.getCurrentWeatherDaysAndHourly(lat, lon, apikey, unit)
-
-if (response.isSuccessful) {
-hourlyWeatherLiveData.postValue(response.body())
-} else {
-Log.d(TAG, "getCurrentWeatherHourly: Fail")
-}
-}
-}
-*/
 
     fun getWeatherDetails(latitude: Double, longitude: Double, key: String, unit: String?) {
 
-        viewModelScope.launch {
-            val response = weatherRepository.getWeatherDetails(latitude, longitude, key, unit!!)
-
-            if (response.isSuccessful) {
-                weatherLiveData.postValue(response.body())
-            } else {
-                Log.d(TAG, "getWeatherDetails: Fail")
+        viewModelScope.launch(Dispatchers.IO) {
+            weatherRepository.getWeatherDetails(latitude, longitude, key, unit!!).catch {
+                _weatherLiveData.value = ApiState.Failure(it)
+            }.collect {
+                _weatherLiveData.value = it!!
             }
         }
     }

@@ -5,10 +5,13 @@ import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.forecast.R
 import com.example.forecast.data.model.OpenWeatherResponse
+import com.example.forecast.data.network.ApiState
 import com.example.forecast.data.utils.Constants
 import com.example.forecast.data.utils.Constants.Companion.API_KEY
 import com.example.forecast.data.utils.Constants.Companion.LATITUDE
@@ -18,13 +21,11 @@ import com.example.forecast.databinding.FragmentHomeBinding
 import com.example.forecast.ui.home.view.DailyAdapter
 import com.example.forecast.ui.home.view.HourlyAdapter
 import com.example.forecast.ui.home.viewmodel.HomeViewModel
+import kotlinx.coroutines.launch
 
 class FavoritesActivity : AppCompatActivity() {
 
     private var _binding: ActivityFavoritesBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
     lateinit var homeViewModel: HomeViewModel
@@ -49,26 +50,45 @@ class FavoritesActivity : AppCompatActivity() {
         val unit = sharedPreferences.getString(Constants.TEMPERATURE, "metric")
         val wind = sharedPreferences.getString(Constants.WIND_SPEED, "metric")
 
+        val hourlyAdapter = HourlyAdapter(unit!!, this)
+        val dailyAdapter = DailyAdapter(unit, this)
+
         homeViewModel.getWeatherDetails(latitude, longitude, API_KEY, unit)
 
-        homeViewModel.weatherLiveData.observe(this) {
-            bindCurrentWeather(
-                it,
-                unit,
-                wind
-            )
+        lifecycleScope.launch {
+            homeViewModel.weatherLiveData
+                .collect {
+                    when (it) {
+                        is ApiState.Success -> {
+                            val date = it.data
 
-            val hourlyAdapter = HourlyAdapter(unit!!, this)
-            binding.recyclerViewHourly.apply {
-                adapter = hourlyAdapter
-            }
-            hourlyAdapter.differ.submitList(it.hourly)
+                            bindCurrentWeather(
+                                date,
+                                unit,
+                                wind
+                            )
 
-            val dailyAdapter = DailyAdapter(unit, this)
-            binding.recyclerViewDaily.apply {
-                adapter = dailyAdapter
-            }
-            dailyAdapter.differ.submitList(it.daily)
+                            binding.recyclerViewHourly.apply {
+                                adapter = hourlyAdapter
+                            }
+                            hourlyAdapter.differ.submitList(date.hourly)
+
+
+                            binding.recyclerViewDaily.apply {
+                                adapter = dailyAdapter
+                            }
+                            dailyAdapter.differ.submitList(date.daily)
+                        }
+
+                        is ApiState.Failure -> {
+
+                        }
+
+                        is ApiState.Loading -> {
+
+                        }
+                    }
+                }
         }
     }
 
@@ -105,7 +125,7 @@ class FavoritesActivity : AppCompatActivity() {
             openWeatherResponse?.current?.weather?.get(0)?.description
 
         val iconLink =
-            "https://openweathermap.org/img/wn/${openWeatherResponse?.current?.weather?.get(0)?.icon}@2x.png"
+            "https://openweathermap.org/img/w/${openWeatherResponse?.current?.weather?.get(0)?.icon}.png"
         Glide.with(this).load(iconLink).into(binding.imageViewConditionIcon)
     }
 }

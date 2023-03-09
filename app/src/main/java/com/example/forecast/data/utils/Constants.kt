@@ -13,9 +13,12 @@ class Constants {
         const val LANGUAGE = "LANGUAGE"
         const val TEMPERATURE = "TEMPERATURE"
         const val WIND_SPEED = "WIND_SPEED"
+        const val LOCATION = "LOCATION"
         const val NOTIFICATION_ID = 1
         const val CHANNEL_ID = "CHANNEL_ID"
         const val TITLE_EXTRA = "TITLE_EXTRA"
         const val MESSAGE_EXTRA = "MESSAGE_EXTRA"
+        const val KEY_LAT = "KEY_LAT"
+        const val KEY_LNG = "KEY_LNG"
     }
 }

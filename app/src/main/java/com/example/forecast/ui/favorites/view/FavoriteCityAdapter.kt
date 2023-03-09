@@ -51,7 +51,7 @@ class FavoriteCityAdapter(val context: Context, onCityClickListener: OnCityClick
         }
 
         holder.favoriteCityItemBinding.imageButtonDelete.setOnClickListener {
-            listener.onCityClick(city)
+            listener.onDeleteCity(city)
         }
     }
 
@@ -61,5 +61,6 @@ class FavoriteCityAdapter(val context: Context, onCityClickListener: OnCityClick
 
     interface OnCityClickListener {
         fun onCityClick(city: FavoriteCity)
+        fun onDeleteCity(city: FavoriteCity)
     }
 }

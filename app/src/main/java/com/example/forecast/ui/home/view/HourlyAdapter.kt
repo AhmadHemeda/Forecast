@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.forecast.data.model.Hourly
 import com.example.forecast.databinding.HourlyItemBinding
+import java.text.SimpleDateFormat
 
 class HourlyAdapter(
     val unit: String,
@@ -33,7 +34,7 @@ class HourlyAdapter(
         val currentHourlyWeatherResponse = differ.currentList[position]
 
         val iconLink =
-            "https://openweathermap.org/img/wn/${currentHourlyWeatherResponse.weather[0].icon}@2x.png"
+            "https://openweathermap.org/img/w/${currentHourlyWeatherResponse.weather[0].icon}.png"
         Glide.with(context).load(iconLink)
             .into(holder.hourlyItemBinding.imageViewConditionIconHourly)
 
@@ -43,8 +44,14 @@ class HourlyAdapter(
             else -> " F"
         }
 
+        val timeStamp = currentHourlyWeatherResponse.dt.toLong().times(1000)
+        val simpleDateFormatTime = SimpleDateFormat("hh aa")
+        val time = simpleDateFormatTime.format(timeStamp)
+
         holder.hourlyItemBinding.textViewTemperatureHourly.text =
             currentHourlyWeatherResponse.temp.toInt().toString().plus(unit)
+
+        holder.hourlyItemBinding.textViewTime.text = time
     }
 
     override fun getItemCount(): Int {
