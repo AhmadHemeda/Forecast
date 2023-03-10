@@ -4,12 +4,17 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.example.forecast.data.model.CurrentWeather
 import com.example.forecast.data.model.FavoriteCity
 
-@Database(entities = [FavoriteCity::class], version = 1)
+@Database(entities = [FavoriteCity::class, CurrentWeather::class], version = 1)
+@TypeConverters(Converter::class)
 abstract class WeatherDataBase : RoomDatabase() {
 
     abstract fun getFavoriteCityDao(): FavoriteCityDAO
+
+    abstract fun getCurrentWeatherDao(): CurrentWeatherDao
 
     companion object {
         @Volatile
@@ -27,6 +32,8 @@ abstract class WeatherDataBase : RoomDatabase() {
             context.applicationContext,
             WeatherDataBase::class.java,
             "weather_database"
-        ).build()
+        )
+            .fallbackToDestructiveMigration()
+            .build()
     }
 }

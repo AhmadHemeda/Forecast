@@ -1,21 +1,45 @@
 package com.example.forecast.data.repo
 
-import androidx.lifecycle.LiveData
+import android.app.Application
+import com.example.forecast.data.DataSource
+import com.example.forecast.data.db.LocalDataSource
 import com.example.forecast.data.db.WeatherDataBase
 import com.example.forecast.data.model.FavoriteCity
 import kotlinx.coroutines.flow.Flow
 
-class FavoriteCityRepo(private var weatherDataBase: WeatherDataBase) {
+class FavoriteCityRepo(
+    private var localDataSource: DataSource
+) {
+
+    companion object {
+        @Volatile
+        private var INSTANCE: FavoriteCityRepo? = null
+
+        fun getInstance(application: Application): FavoriteCityRepo {
+            return INSTANCE ?: synchronized(this) {
+                val dataBase = WeatherDataBase.getInstance(application)
+
+                val localSource = LocalDataSource(
+                    currentWeatherDao = dataBase.getCurrentWeatherDao(),
+                    favoriteCityDAO = dataBase.getFavoriteCityDao()
+                )
+
+                FavoriteCityRepo(
+                    localDataSource = localSource
+                )
+            }
+        }
+    }
 
     fun getAllFavoriteCities(): Flow<List<FavoriteCity>> {
-        return weatherDataBase.getFavoriteCityDao(). getAllFavoriteCities()
+        return localDataSource.getAllFavoriteCities()
     }
 
     suspend fun insertCity(favoriteCity: FavoriteCity) {
-        weatherDataBase.getFavoriteCityDao().insertCity(favoriteCity)
+        localDataSource.insertCity(favoriteCity)
     }
 
     suspend fun deleteCity(favoriteCity: FavoriteCity) {
-        weatherDataBase.getFavoriteCityDao().deleteCity(favoriteCity)
+        localDataSource.deleteCity(favoriteCity)
     }
 }

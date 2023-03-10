@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.forecast.R
 import com.example.forecast.data.model.FavoriteCity
+import com.example.forecast.data.repo.FavoriteCityRepo
 import com.example.forecast.databinding.ActivityMapsBinding
 import com.example.forecast.ui.favorites.viewmodel.FavoritesViewModel
 import com.example.forecast.ui.favorites.viewmodel.FavoritesViewModelFactory
@@ -44,7 +45,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val favoritesViewModelFactory = FavoritesViewModelFactory(this)
+        val favoritesViewModelFactory = FavoritesViewModelFactory(FavoriteCityRepo.getInstance(application))
         favoritesViewModel =
             ViewModelProvider(this, favoritesViewModelFactory)[FavoritesViewModel::class.java]
 

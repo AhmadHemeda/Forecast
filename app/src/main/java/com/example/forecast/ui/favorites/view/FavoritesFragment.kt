@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.forecast.data.model.FavoriteCity
+import com.example.forecast.data.repo.FavoriteCityRepo
 import com.example.forecast.data.utils.Constants.Companion.LATITUDE
 import com.example.forecast.data.utils.Constants.Companion.LONGITUDE
 import com.example.forecast.databinding.FavoriteCityItemBinding
@@ -32,7 +33,7 @@ class FavoritesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val favoritesViewModelFactory = FavoritesViewModelFactory(requireContext())
+        val favoritesViewModelFactory = FavoritesViewModelFactory(FavoriteCityRepo.getInstance(requireActivity().application))
         val favoriteViewModel =
             ViewModelProvider(this, favoritesViewModelFactory)[FavoritesViewModel::class.java]
         var favoriteCityList: List<FavoriteCity>
@@ -62,24 +63,21 @@ class FavoritesFragment : Fragment() {
             }
         }
 
-
-
         val favoriteCityAdapter = FavoriteCityAdapter(requireContext(), listener)
 
-//        val favoriteCityStateFlow = favoriteViewModel.getAllFavoriteCities().asStateFlow()
-//
-//        lifecycleScope.launch {
-//            favoriteCityStateFlow.collect { favoriteCityList ->
-//                favoriteCityList.reversed()
-//
-//                favoriteCityAdapter.differ.submitList(favoriteCityList.toList())
-//                binding.recyclerViewFavoriteCity.apply {
-//                    adapter = favoriteCityAdapter
-//                    layoutManager = LinearLayoutManager(requireContext())
-//                }
-//            }
-//        }
+        lifecycleScope.launch {
+            favoriteViewModel.state.collect { favoriteCityList ->
+                favoriteCityList.reversed()
 
+                favoriteCityAdapter.differ.submitList(favoriteCityList.toList())
+                binding.recyclerViewFavoriteCity.apply {
+                    adapter = favoriteCityAdapter
+                    layoutManager = LinearLayoutManager(requireContext())
+                }
+            }
+        }
+
+        /*
         favoriteViewModel.favoriteCityLiveData.observe(viewLifecycleOwner) {
             favoriteCityList = it
             favoriteCityList.reversed()
@@ -91,16 +89,17 @@ class FavoritesFragment : Fragment() {
             }
         }
 
-//        favoriteViewModel.getAllFavoriteCities().observe(viewLifecycleOwner) {
-//            favoriteCityList = it
-//            favoriteCityList.reversed()
-//
-//            favoriteCityAdapter.differ.submitList(favoriteCityList.toList())
-//            binding.recyclerViewFavoriteCity.apply {
-//                adapter = favoriteCityAdapter
-//                layoutManager = LinearLayoutManager(requireContext())
-//            }
-//        }
+        favoriteViewModel.getAllFavoriteCities().observe(viewLifecycleOwner) {
+            favoriteCityList = it
+            favoriteCityList.reversed()
+
+            favoriteCityAdapter.differ.submitList(favoriteCityList.toList())
+            binding.recyclerViewFavoriteCity.apply {
+                adapter = favoriteCityAdapter
+                layoutManager = LinearLayoutManager(requireContext())
+            }
+        }
+        */
 
         return root
     }

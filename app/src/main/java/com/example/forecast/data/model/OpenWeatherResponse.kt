@@ -1,10 +1,9 @@
 package com.example.forecast.data.model
 
-
 import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
-@Entity(tableName = "current_weather_table")
 data class OpenWeatherResponse(
     val alerts: List<Alert> = listOf(),
     val current: Current? = null,
@@ -14,6 +13,5 @@ data class OpenWeatherResponse(
     val lon: Double = 0.0,
     val minutely: List<Minutely> = listOf(),
     val timezone: String = "",
-    @SerializedName("timezone_offset")
     val timezoneOffset: Int = 0
 )

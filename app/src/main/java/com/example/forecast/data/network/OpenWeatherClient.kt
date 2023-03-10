@@ -10,11 +10,11 @@ class OpenWeatherClient {
 
     companion object {
         private val retrofit by lazy {
-            val logging = HttpLoggingInterceptor()
-            logging.setLevel(HttpLoggingInterceptor.Level.BODY)
+            val interceptor = HttpLoggingInterceptor()
+            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
 
             val client = OkHttpClient.Builder()
-                .addInterceptor(logging)
+                .addInterceptor(interceptor)
                 .build()
 
             Retrofit.Builder()

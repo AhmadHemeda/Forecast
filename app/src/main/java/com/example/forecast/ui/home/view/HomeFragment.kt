@@ -87,6 +87,8 @@ class HomeFragment : Fragment() {
                                 adapter = dailyAdapter
                             }
                             dailyAdapter.differ.submitList(date.daily)
+
+
                         }
 
                         is ApiState.Failure -> {

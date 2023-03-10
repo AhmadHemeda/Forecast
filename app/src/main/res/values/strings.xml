@@ -47,4 +47,7 @@
     <string name="rb_gps">GPS</string>
     <string name="rb_maps">Maps</string>
     <string name="title_activity_home_map">HomeMap</string>
+    <string name="tv_clouds">Clouds</string>
+    <string name="tv_visibility">Visibility</string>
+    <string name="tv_uvi">UVI</string>
 </resources>
