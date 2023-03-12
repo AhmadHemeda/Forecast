@@ -10,9 +10,9 @@
     app:cardCornerRadius="20dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:background="@color/teal_700"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/teal_700">
 
         <TextView
             android:id="@+id/textView_city_name"

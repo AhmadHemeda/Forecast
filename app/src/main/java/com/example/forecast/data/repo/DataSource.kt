@@ -1,5 +1,6 @@
 package com.example.forecast.data.repo
 
+import com.example.forecast.data.model.custom.AlertDateTime
 import com.example.forecast.data.model.custom.CurrentWeather
 import com.example.forecast.data.model.custom.FavoriteCity
 import com.example.forecast.data.model.response.OpenWeatherResponse
@@ -26,4 +27,10 @@ interface DataSource {
     suspend fun insertCity(favoriteCity: FavoriteCity)
 
     suspend fun deleteCity(favoriteCity: FavoriteCity)
+
+    fun getAllDatesTimes(): Flow<List<AlertDateTime>>
+
+    suspend fun insertDateTime(alertDateTime: AlertDateTime)
+
+    suspend fun deleteDateTime(alertDateTime: AlertDateTime)
 }

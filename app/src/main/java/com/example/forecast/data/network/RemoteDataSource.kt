@@ -1,5 +1,6 @@
 package com.example.forecast.data.network
 
+import com.example.forecast.data.model.custom.AlertDateTime
 import com.example.forecast.data.repo.DataSource
 import com.example.forecast.data.model.custom.CurrentWeather
 import com.example.forecast.data.model.custom.FavoriteCity
@@ -38,6 +39,18 @@ class RemoteDataSource(
     }
 
     override suspend fun deleteCity(favoriteCity: FavoriteCity) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getAllDatesTimes(): Flow<List<AlertDateTime>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun insertDateTime(alertDateTime: AlertDateTime) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteDateTime(alertDateTime: AlertDateTime) {
         TODO("Not yet implemented")
     }
 

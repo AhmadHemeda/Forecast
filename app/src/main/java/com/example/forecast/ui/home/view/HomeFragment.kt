@@ -26,6 +26,7 @@ import com.example.forecast.data.utils.Constants.Companion.LONGITUDE
 import com.example.forecast.data.utils.Constants.Companion.SHARED_PREFERENCE
 import com.example.forecast.data.utils.Constants.Companion.TEMPERATURE
 import com.example.forecast.data.utils.Constants.Companion.WIND_SPEED
+import com.example.forecast.data.utils.IconMapper
 import com.example.forecast.databinding.FragmentHomeBinding
 import com.example.forecast.databinding.FragmentSettingsBinding
 import com.example.forecast.ui.favorites.viewmodel.FavoritesViewModel
@@ -205,7 +206,13 @@ class HomeFragment : Fragment() {
 
         binding.textViewTime.text = time
 
-        Glide.with(requireContext()).load(iconLink).into(binding.imageViewConditionIcon)
+        val icon = openWeatherResponse.current?.weather?.get(0)?.icon
+
+        binding.imageViewConditionIcon.setImageResource(IconMapper.getWeatherIcon(icon!!))
+
+//        holder.dailyItemBinding.imageViewConditionIconDaily.setImageResource(IconMapper.getWeatherIcon(icon))
+//
+//        Glide.with(requireContext()).load(iconLink).into(binding.imageViewConditionIcon)
     }
 
     override fun onDestroyView() {

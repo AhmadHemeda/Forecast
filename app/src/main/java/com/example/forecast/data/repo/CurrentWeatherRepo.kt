@@ -20,7 +20,8 @@ class CurrentWeatherRepo(
 
                 val localSource = LocalDataSource(
                     currentWeatherDao = dataBase.getCurrentWeatherDao(),
-                    favoriteCityDAO = dataBase.getFavoriteCityDao()
+                    favoriteCityDAO = dataBase.getFavoriteCityDao(),
+                    alertDateTimeDao = dataBase.getAlertDateTimeDao()
                 )
 
                 CurrentWeatherRepo(

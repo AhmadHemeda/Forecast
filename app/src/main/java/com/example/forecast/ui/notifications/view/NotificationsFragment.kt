@@ -1,28 +1,25 @@
 package com.example.forecast.ui.notifications.view
 
-import android.annotation.SuppressLint
 import android.app.*
-import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.text.format.DateFormat
+import android.util.Log
 import android.view.*
-import android.widget.DatePicker
-import android.widget.TimePicker
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.example.forecast.data.service.Alert
+import com.example.forecast.data.repo.NotificationRepo
 import com.example.forecast.data.utils.Constants.Companion.CHANNEL_ID
-import com.example.forecast.data.utils.Constants.Companion.MESSAGE_EXTRA
-import com.example.forecast.data.utils.Constants.Companion.NOTIFICATION_ID
-import com.example.forecast.data.utils.Constants.Companion.TITLE_EXTRA
 import com.example.forecast.databinding.DialogAlertBinding
 import com.example.forecast.databinding.FragmentNotificationsBinding
+import com.example.forecast.ui.notifications.viewmodel.NotificationViewModelFactory
 import com.example.forecast.ui.notifications.viewmodel.NotificationsViewModel
+import java.text.SimpleDateFormat
 import java.util.*
+
+private const val TAG = "NotificationsFragment"
 
 class NotificationsFragment : Fragment() {
 
@@ -31,121 +28,199 @@ class NotificationsFragment : Fragment() {
 
     private lateinit var dialogBinding: DialogAlertBinding
 
-    var year = 0
-    var month = 0
-    var day = 0
-    var hour = 0
-    var minute = 0
-
-    var savedYear = 0
-    var savedMonth = 0
-    var savedDay = 0
-    var savedHour = 0
-    var savedMinute = 0
-
-    @SuppressLint("SetTextI18n")
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        val notificationViewModelFactory =
+            NotificationViewModelFactory(NotificationRepo.getInstance(requireActivity().application))
+
         val notificationsViewModel =
-            ViewModelProvider(this)[NotificationsViewModel::class.java]
+            ViewModelProvider(
+                this,
+                notificationViewModelFactory
+            )[NotificationsViewModel::class.java]
 
         _binding = FragmentNotificationsBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
         dialogBinding = DialogAlertBinding.inflate(inflater, container, false)
 
-        val timePickerDialogFrom: TimePickerDialog.OnTimeSetListener =
-            TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
-                savedHour = hourOfDay
-                savedMinute = minute
-                dialogBinding.textViewDateFrom.text = "$savedDay ${savedMonth.plus(1)}, $savedYear"
-                dialogBinding.textViewTimeFrom.text = "$savedHour:$savedMinute"
-            }
-
-        val datePickerDialogFrom: DatePickerDialog.OnDateSetListener =
-            DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
-                savedYear = year
-                savedMonth = month
-                savedDay = dayOfMonth
-
-                getDateTimeCalendar()
-
-                TimePickerDialog(requireContext(), timePickerDialogFrom, hour, minute, true).show()
-            }
-
-        val timePickerDialogTo: TimePickerDialog.OnTimeSetListener =
-            TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
-                savedHour = hourOfDay
-                savedMinute = minute
-                dialogBinding.textViewDateTo.text = "$savedDay ${savedMonth.plus(1)}, $savedYear"
-                dialogBinding.textViewTimeTo.text = "$savedHour:$savedMinute"
-            }
-
-        val datePickerDialogTo: DatePickerDialog.OnDateSetListener =
-            DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
-
-                savedYear = year
-                savedMonth = month
-                savedDay = dayOfMonth
-
-                getDateTimeCalendar()
-
-                TimePickerDialog(requireContext(), timePickerDialogTo, hour, minute, true).show()
-            }
-
         binding.floatingActionButtonAlert.setOnClickListener {
             getDialog().show()
         }
 
-        dialogBinding.cardViewFromPicker.setOnClickListener {
-            getDateTimeCalendar()
+        pickDatesAndTimes()
 
-            DatePickerDialog(requireContext(), datePickerDialogFrom, year, month, day).show()
-        }
 
-        dialogBinding.cardViewToPicker.setOnClickListener {
-            getDateTimeCalendar()
-
-            DatePickerDialog(requireContext(), datePickerDialogTo, year, month, day).show()
-
-        }
-
-        createNotificationChannel()
-
-        dialogBinding.buttonSaveAlert.setOnClickListener {
-            scheduleNotification()
-        }
 
         return root
     }
 
-    private fun scheduleNotification() {
-        val intent = Intent(context, Alert::class.java)
-        val title = "Weather Alert"
-        val message = "Weather is fine, no alerts in the specified period"
-        intent.putExtra(TITLE_EXTRA, title)
-        intent.putExtra(MESSAGE_EXTRA, message)
-
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            NOTIFICATION_ID,
-            intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val time = getTime()
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            time,
-            pendingIntent
-        )
-        showAlert(time, title, message)
+    private fun pickDatesAndTimes() {
+        pickDateFrom()
+        pickDateTo()
+        pickTimeFrom()
+        pickTimeTo()
     }
+
+    private fun pickDateFrom() {
+        val calendar = Calendar.getInstance()
+
+        val datePickerFrom = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
+            calendar.set(Calendar.YEAR, year)
+            calendar.set(Calendar.MONTH, month)
+            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            updateDateFrom(calendar)
+        }
+
+        dialogBinding.cardViewFromDatePicker.setOnClickListener {
+            DatePickerDialog(
+                requireContext(),
+                datePickerFrom,
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
+    }
+
+    private fun updateDateFrom(calendar: Calendar) {
+        val format = "dd MMM"
+        val simpleDateFormat = SimpleDateFormat(format, Locale.UK)
+        val data = calendar
+        Log.i(TAG, "updateDateFrom: ${data.time}")
+        dialogBinding.textViewDateFrom.text = simpleDateFormat.format(data.time)
+    }
+
+    private fun pickDateTo() {
+        val calendar = Calendar.getInstance()
+
+        val datePickerTo = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
+            calendar.set(Calendar.YEAR, year)
+            calendar.set(Calendar.MONTH, month)
+            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            updateDateTo(calendar)
+        }
+
+        dialogBinding.cardViewToDatePicker.setOnClickListener {
+            DatePickerDialog(
+                requireContext(),
+                datePickerTo,
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
+    }
+
+    private fun updateDateTo(calendar: Calendar) {
+        val format = "dd MMM"
+        val simpleDateFormat = SimpleDateFormat(format, Locale.UK)
+        dialogBinding.textViewDateTo.text = simpleDateFormat.format(calendar.time)
+    }
+
+    private fun pickTimeFrom() {
+        val calendar = Calendar.getInstance()
+
+        val timePickerFrom = TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
+            calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+            calendar.set(Calendar.MINUTE, minute)
+            updateTimeFrom(calendar)
+        }
+
+        dialogBinding.cardViewFromTimePicker.setOnClickListener {
+            TimePickerDialog(
+                context,
+                timePickerFrom,
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                false
+            ).show()
+        }
+    }
+
+    private fun updateTimeFrom(calendar: Calendar) {
+        val format = "hh:mm aa"
+        val simpleDateFormat = SimpleDateFormat(format, Locale.UK)
+        dialogBinding.textViewTimeFrom.text = simpleDateFormat.format(calendar.time)
+    }
+
+    private fun pickTimeTo() {
+        val calendar = Calendar.getInstance()
+
+        val timePickerTo = TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
+            calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+            calendar.set(Calendar.MINUTE, minute)
+            updateTimeTo(calendar)
+        }
+
+        dialogBinding.cardViewToTimePicker.setOnClickListener {
+            TimePickerDialog(
+                context,
+                timePickerTo,
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                false
+            ).show()
+        }
+    }
+
+    private fun updateTimeTo(calendar: Calendar) {
+        val format = "hh:mm aa"
+        val simpleDateFormat = SimpleDateFormat(format, Locale.UK)
+        dialogBinding.textViewTimeTo.text = simpleDateFormat.format(calendar.time)
+    }
+
+//    private fun getDateTimeCalendar() {
+//        val calendar = Calendar.getInstance()
+//        year = calendar.get(Calendar.YEAR)
+//        month = calendar.get(Calendar.MONTH)
+//        day = calendar.get(Calendar.DAY_OF_MONTH)
+//        hour = calendar.get(Calendar.HOUR)
+//        minute = calendar.get(Calendar.MINUTE)
+//    }
+
+//    private fun pickDateTimeTo() {
+//        dialogBinding.cardViewToPicker.setOnClickListener {
+//            getDateTimeCalendar()
+//
+//            DatePickerDialog(requireContext(), this, year, month, day).show()
+//        }
+//    }
+
+//    private fun pickDateTimeFrom() {
+//        dialogBinding.cardViewFromPicker.setOnClickListener {
+//            getDateTimeCalendar()
+//
+//            DatePickerDialog(requireContext(), this, year, month, day).show()
+//        }
+//    }
+
+//    private fun scheduleNotification() {
+//        val intent = Intent(context, Alert::class.java)
+//        val title = "Weather Alert"
+//        val message = "Weather is fine, no alerts in the specified period"
+//        intent.putExtra(TITLE_EXTRA, title)
+//        intent.putExtra(MESSAGE_EXTRA, message)
+
+//        val pendingIntent = PendingIntent.getBroadcast(
+//            context,
+//            NOTIFICATION_ID,
+//            intent,
+//            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+//        )
+
+//        val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+//        val time = getTime()
+//        alarmManager.setExactAndAllowWhileIdle(
+//            AlarmManager.RTC_WAKEUP,
+//            time,
+//            pendingIntent
+//        )
+//        showAlert(time, title, message)
+//    }
 
     private fun showAlert(time: Long, title: String, message: String) {
         val date = Date(time)
@@ -163,17 +238,17 @@ class NotificationsFragment : Fragment() {
             .show()
     }
 
-    private fun getTime(): Long {
-        val minute = savedMinute
-        val hour = savedHour
-        val day = savedDay
-        val month = savedMonth
-        val year = savedYear
+//    private fun getTime(): Long {
+//        val minute = savedMinute
+//        val hour = savedHour
+//        val day = savedDay
+//        val month = savedMonth
+//        val year = savedYear
 
-        val calendar = Calendar.getInstance()
-        calendar.set(year, month, day, hour, minute)
-        return calendar.timeInMillis
-    }
+//        val calendar = Calendar.getInstance()
+//        calendar.set(year, month, day, hour, minute)
+//        return calendar.timeInMillis
+//    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel() {
@@ -202,12 +277,9 @@ class NotificationsFragment : Fragment() {
         return dialog
     }
 
-    private fun getDateTimeCalendar() {
-        val calendar = Calendar.getInstance()
-        year = calendar.get(Calendar.YEAR)
-        month = calendar.get(Calendar.MONTH)
-        day = calendar.get(Calendar.DAY_OF_MONTH)
-        hour = calendar.get(Calendar.HOUR)
-        minute = calendar.get(Calendar.MINUTE)
+    override fun onDestroy() {
+        super.onDestroy()
+        getDialog().dismiss()
+        _binding = null
     }
 }

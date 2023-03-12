@@ -50,4 +50,8 @@
     <string name="tv_clouds">Clouds</string>
     <string name="tv_visibility">Visibility</string>
     <string name="tv_uvi">UVI</string>
+    <string name="tv_from_date">Date</string>
+    <string name="tv_to_date">Date</string>
+    <string name="tv_from_time">Time</string>
+    <string name="tv_to_time">Time</string>
 </resources>

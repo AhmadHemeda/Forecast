@@ -1,5 +1,6 @@
 package com.example.forecast.data.db
 
+import com.example.forecast.data.model.custom.AlertDateTime
 import com.example.forecast.data.repo.DataSource
 import com.example.forecast.data.model.custom.CurrentWeather
 import com.example.forecast.data.model.custom.FavoriteCity
@@ -9,7 +10,8 @@ import retrofit2.Response
 
 class LocalDataSource(
     private val currentWeatherDao: CurrentWeatherDao,
-    private val favoriteCityDAO: FavoriteCityDAO
+    private val favoriteCityDAO: FavoriteCityDAO,
+    private val alertDateTimeDao: AlertDateTimeDao
 ) : DataSource {
     override suspend fun getWeatherDetails(
         lat: Double,
@@ -42,5 +44,17 @@ class LocalDataSource(
 
     override suspend fun deleteCity(favoriteCity: FavoriteCity) {
         favoriteCityDAO.deleteCity(favoriteCity)
+    }
+
+    override fun getAllDatesTimes(): Flow<List<AlertDateTime>> {
+        return alertDateTimeDao.getAllDatesTimes()
+    }
+
+    override suspend fun insertDateTime(alertDateTime: AlertDateTime) {
+        alertDateTimeDao.insertDateTime(alertDateTime)
+    }
+
+    override suspend fun deleteDateTime(alertDateTime: AlertDateTime) {
+        alertDateTimeDao.deleteDateTime(alertDateTime)
     }
 }
