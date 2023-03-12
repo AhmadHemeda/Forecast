@@ -33,7 +33,7 @@ class HomeMap : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var alertDialog: AlertDialog
     private lateinit var textViewTitle: TextView
     private lateinit var buttonSave: Button
-    private lateinit var homeViewModel: HomeViewModel
+//    private lateinit var homeViewModel: HomeViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,8 +45,8 @@ class HomeMap : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        homeViewModel =
-            ViewModelProvider(this)[HomeViewModel::class.java]
+//        homeViewModel =
+//            ViewModelProvider(this)[HomeViewModel::class.java]
 
         dialogView = LayoutInflater.from(this).inflate(R.layout.custom_dialog, null)
 

@@ -1,7 +1,7 @@
 package com.example.forecast.data.db
 
 import androidx.room.TypeConverter
-import com.example.forecast.data.model.OpenWeatherResponse
+import com.example.forecast.data.model.response.OpenWeatherResponse
 import com.google.gson.Gson
 
 class Converter {

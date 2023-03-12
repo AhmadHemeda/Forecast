@@ -1,15 +1,14 @@
 package com.example.forecast.data.repo
 
 import android.app.Application
-import com.example.forecast.data.DataSource
 import com.example.forecast.data.db.LocalDataSource
 import com.example.forecast.data.db.WeatherDataBase
-import com.example.forecast.data.model.FavoriteCity
+import com.example.forecast.data.model.custom.FavoriteCity
 import kotlinx.coroutines.flow.Flow
 
 class FavoriteCityRepo(
     private var localDataSource: DataSource
-) {
+) : IFavoriteCityRepo {
 
     companion object {
         @Volatile
@@ -31,15 +30,15 @@ class FavoriteCityRepo(
         }
     }
 
-    fun getAllFavoriteCities(): Flow<List<FavoriteCity>> {
+    override fun getAllFavoriteCities(): Flow<List<FavoriteCity>> {
         return localDataSource.getAllFavoriteCities()
     }
 
-    suspend fun insertCity(favoriteCity: FavoriteCity) {
+    override suspend fun insertCity(favoriteCity: FavoriteCity) {
         localDataSource.insertCity(favoriteCity)
     }
 
-    suspend fun deleteCity(favoriteCity: FavoriteCity) {
+    override suspend fun deleteCity(favoriteCity: FavoriteCity) {
         localDataSource.deleteCity(favoriteCity)
     }
 }

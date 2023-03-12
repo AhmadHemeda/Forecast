@@ -1,5 +1,6 @@
 package com.example.forecast.ui.notifications.view
 
+import android.annotation.SuppressLint
 import android.app.*
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
@@ -42,6 +43,7 @@ class NotificationsFragment : Fragment() {
     var savedHour = 0
     var savedMinute = 0
 
+    @SuppressLint("SetTextI18n")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater,

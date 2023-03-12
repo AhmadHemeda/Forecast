@@ -1,7 +1,7 @@
 package com.example.forecast.data.db
 
 import androidx.room.*
-import com.example.forecast.data.model.CurrentWeather
+import com.example.forecast.data.model.custom.CurrentWeather
 import kotlinx.coroutines.flow.Flow
 
 @Dao

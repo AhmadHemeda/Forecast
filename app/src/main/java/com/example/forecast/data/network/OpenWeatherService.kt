@@ -1,6 +1,6 @@
 package com.example.forecast.data.network
 
-import com.example.forecast.data.model.OpenWeatherResponse
+import com.example.forecast.data.model.response.OpenWeatherResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query

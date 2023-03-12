@@ -1,5 +1,6 @@
 package com.example.forecast.ui.home.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.view.LayoutInflater
@@ -9,7 +10,8 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.forecast.data.model.Daily
+import com.example.forecast.data.model.response.Daily
+import com.example.forecast.data.utils.IconMapper
 import com.example.forecast.databinding.DailyItemBinding
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -33,14 +35,18 @@ class DailyAdapter(
         return DailyViewHolder(dailyItemBinding)
     }
 
+    @SuppressLint("SimpleDateFormat")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: DailyAdapter.DailyViewHolder, position: Int) {
         val currentDailyWeatherResponse = differ.currentList[position]
 
-        val iconLink =
-            "https://openweathermap.org/img/w/${currentDailyWeatherResponse.weather[0].icon}.png"
-        Glide.with(context).load(iconLink)
-            .into(holder.dailyItemBinding.imageViewConditionIconDaily)
+//        val iconLink =
+//            "https://openweathermap.org/img/w/${currentDailyWeatherResponse.weather[0].icon}.png"
+//        Glide.with(context).load(iconLink)
+//            .into(holder.dailyItemBinding.imageViewConditionIconDaily)
+        val icon = currentDailyWeatherResponse.weather[0].icon
+
+        holder.dailyItemBinding.imageViewConditionIconDaily.setImageResource(IconMapper.getWeatherIcon(icon))
 
         val unit: String = when (tempUnit) {
             "stander" -> " K"
@@ -51,8 +57,8 @@ class DailyAdapter(
         val timeStamp = currentDailyWeatherResponse.dt.toLong().times(1000)
         val simpleDateFormatDate = SimpleDateFormat("yyyy-MM-dd")
         val date = simpleDateFormatDate.format(timeStamp)
-        val localDate = LocalDate.parse(date) // convert String to LocalDate
-        val dayName = localDate.dayOfWeek // get the day name as an enum
+        val localDate = LocalDate.parse(date)
+        val dayName = localDate.dayOfWeek
 
         holder.dailyItemBinding.textViewTemperatureDailyMax.text =
             currentDailyWeatherResponse.temp.max.toInt().toString().plus(unit)

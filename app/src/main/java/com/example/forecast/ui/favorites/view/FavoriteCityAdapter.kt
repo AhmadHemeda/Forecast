@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.example.forecast.data.model.FavoriteCity
+import com.example.forecast.data.model.custom.FavoriteCity
 import com.example.forecast.databinding.FavoriteCityItemBinding
 
 class FavoriteCityAdapter(val context: Context, onCityClickListener: OnCityClickListener) :

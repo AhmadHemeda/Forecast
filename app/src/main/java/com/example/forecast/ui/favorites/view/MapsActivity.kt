@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.forecast.R
-import com.example.forecast.data.model.FavoriteCity
+import com.example.forecast.data.model.custom.FavoriteCity
 import com.example.forecast.data.repo.FavoriteCityRepo
 import com.example.forecast.databinding.ActivityMapsBinding
 import com.example.forecast.ui.favorites.viewmodel.FavoritesViewModel
@@ -26,8 +26,6 @@ import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.coroutines.launch
 import java.util.*
 
-private const val TAG = "MapsActivity"
-
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
@@ -38,14 +36,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var binding: ActivityMapsBinding
     private lateinit var favoritesViewModel: FavoritesViewModel
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val favoritesViewModelFactory = FavoritesViewModelFactory(FavoriteCityRepo.getInstance(application))
+        val favoritesViewModelFactory =
+            FavoritesViewModelFactory(FavoriteCityRepo.getInstance(application))
         favoritesViewModel =
             ViewModelProvider(this, favoritesViewModelFactory)[FavoritesViewModel::class.java]
 
@@ -68,21 +66,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng))
 
-        // Set a listener for map click.
         mMap.setOnMapClickListener { latLng ->
-            // Creating a marker
             val markerOptions = MarkerOptions()
 
             val geocoder = Geocoder(this, Locale.getDefault())
+
             val addresses: List<Address> = geocoder.getFromLocation(
                 latLng.latitude,
                 latLng.longitude, 1
             ) as List<Address>
 
-            val cityName: String = if (addresses[0].locality.equals(null)) {
-                addresses[0].countryName
+            val cityName: String = if (addresses[0].adminArea.isNullOrEmpty()) {
+                getCityName(latLng.latitude, latLng.longitude)
             } else {
-                addresses[0].locality
+                addresses[0].adminArea
             }
 
             // Setting the position for the marker
@@ -122,7 +119,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val geoCoder = Geocoder(this, Locale.getDefault())
         val address = geoCoder.getFromLocation(lat, long, 3)
 
-        cityName = address!![0].locality
+        cityName = address!![0].adminArea
         return cityName
     }
 }

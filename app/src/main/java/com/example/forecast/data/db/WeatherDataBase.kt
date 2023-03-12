@@ -5,8 +5,8 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.example.forecast.data.model.CurrentWeather
-import com.example.forecast.data.model.FavoriteCity
+import com.example.forecast.data.model.custom.CurrentWeather
+import com.example.forecast.data.model.custom.FavoriteCity
 
 @Database(entities = [FavoriteCity::class, CurrentWeather::class], version = 1)
 @TypeConverters(Converter::class)

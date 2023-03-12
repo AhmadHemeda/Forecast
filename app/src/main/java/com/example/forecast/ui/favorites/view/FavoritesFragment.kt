@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.forecast.data.model.FavoriteCity
+import com.example.forecast.data.model.custom.FavoriteCity
 import com.example.forecast.data.repo.FavoriteCityRepo
 import com.example.forecast.data.utils.Constants.Companion.LATITUDE
 import com.example.forecast.data.utils.Constants.Companion.LONGITUDE
@@ -18,7 +18,6 @@ import com.example.forecast.databinding.FavoriteCityItemBinding
 import com.example.forecast.databinding.FragmentFavoriteBinding
 import com.example.forecast.ui.favorites.viewmodel.FavoritesViewModel
 import com.example.forecast.ui.favorites.viewmodel.FavoritesViewModelFactory
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class FavoritesFragment : Fragment() {
@@ -33,10 +32,11 @@ class FavoritesFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val favoritesViewModelFactory = FavoritesViewModelFactory(FavoriteCityRepo.getInstance(requireActivity().application))
+        val favoritesViewModelFactory =
+            FavoritesViewModelFactory(FavoriteCityRepo.getInstance(requireActivity().application))
+
         val favoriteViewModel =
             ViewModelProvider(this, favoritesViewModelFactory)[FavoritesViewModel::class.java]
-        var favoriteCityList: List<FavoriteCity>
 
         _binding = FragmentFavoriteBinding.inflate(inflater, container, false)
         val root: View = binding.root

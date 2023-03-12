@@ -12,9 +12,14 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import com.bumptech.glide.Glide
-import com.example.forecast.data.model.OpenWeatherResponse
+import com.example.forecast.data.model.custom.CurrentWeather
+import com.example.forecast.data.model.response.OpenWeatherResponse
 import com.example.forecast.data.network.ApiState
+import com.example.forecast.data.repo.CurrentWeatherRepo
+import com.example.forecast.data.repo.FavoriteCityRepo
+import com.example.forecast.data.repo.WeatherRepo
 import com.example.forecast.data.utils.Constants.Companion.API_KEY
 import com.example.forecast.data.utils.Constants.Companion.LATITUDE
 import com.example.forecast.data.utils.Constants.Companion.LONGITUDE
@@ -23,7 +28,10 @@ import com.example.forecast.data.utils.Constants.Companion.TEMPERATURE
 import com.example.forecast.data.utils.Constants.Companion.WIND_SPEED
 import com.example.forecast.databinding.FragmentHomeBinding
 import com.example.forecast.databinding.FragmentSettingsBinding
+import com.example.forecast.ui.favorites.viewmodel.FavoritesViewModel
+import com.example.forecast.ui.favorites.viewmodel.FavoritesViewModelFactory
 import com.example.forecast.ui.home.viewmodel.HomeViewModel
+import com.example.forecast.ui.home.viewmodel.HomeViewModelFactory
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -34,8 +42,6 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var homeViewModel: HomeViewModel
-
     private lateinit var settingsBinding: FragmentSettingsBinding
 
     override fun onCreateView(
@@ -43,8 +49,15 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
+        val homeViewModelFactory =
+            HomeViewModelFactory(
+                CurrentWeatherRepo.getInstance(requireActivity().application),
+                WeatherRepo()
+            )
+
         val homeViewModel =
-            ViewModelProvider(this)[HomeViewModel::class.java]
+            ViewModelProvider(this, homeViewModelFactory)[HomeViewModel::class.java]
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
@@ -61,7 +74,6 @@ class HomeFragment : Fragment() {
         val hourlyAdapter = HourlyAdapter(unit!!, requireContext())
         val dailyAdapter = DailyAdapter(unit, requireContext())
 
-        this.homeViewModel = ViewModelProvider(this)[homeViewModel::class.java]
         homeViewModel.getWeatherDetails(latitude!!, longitude!!, API_KEY, unit)
 
         lifecycleScope.launch {
@@ -88,12 +100,39 @@ class HomeFragment : Fragment() {
                             }
                             dailyAdapter.differ.submitList(date.daily)
 
-
+                            homeViewModel.viewModelScope.launch {
+                                homeViewModel.insertCurrentWeather(
+                                    CurrentWeather(
+                                        1,
+                                        date
+                                    )
+                                )
+                            }
                         }
 
                         is ApiState.Failure -> {
-                            Toast.makeText(context, it.msg.toString(), Toast.LENGTH_SHORT)
-                                .show()
+                            homeViewModel.viewModelScope.launch {
+                                homeViewModel.state.collect { currentWeather ->
+                                    val date = currentWeather.weather
+
+                                    bindCurrentWeather(
+                                        date,
+                                        unit,
+                                        wind
+                                    )
+
+                                    binding.recyclerViewHourly.apply {
+                                        adapter = hourlyAdapter
+                                    }
+                                    hourlyAdapter.differ.submitList(date.hourly)
+
+
+                                    binding.recyclerViewDaily.apply {
+                                        adapter = dailyAdapter
+                                    }
+                                    dailyAdapter.differ.submitList(date.daily)
+                                }
+                            }
                         }
 
                         is ApiState.Loading -> {
@@ -128,6 +167,7 @@ class HomeFragment : Fragment() {
             "https://openweathermap.org/img/w/${openWeatherResponse.current?.weather?.get(0)?.icon}.png"
 
         val timeStamp = openWeatherResponse.current?.dt?.times(1000)
+
         val simpleDateFormatDate = SimpleDateFormat("dd MMM")
         val date = simpleDateFormatDate.format(timeStamp)
 
@@ -147,6 +187,15 @@ class HomeFragment : Fragment() {
 
         binding.textViewPressure.text =
             openWeatherResponse.current?.pressure.toString().plus(" hPa")
+
+        binding.textViewClouds.text =
+            openWeatherResponse.current?.clouds.toString().plus(" %")
+
+        binding.textViewVisibility.text =
+            openWeatherResponse.current?.visibility?.times(0.001)?.toInt().toString().plus(" km")
+
+        binding.textViewUvi.text =
+            openWeatherResponse.current?.uvi.toString()
 
         binding.textViewDescription.text = openWeatherResponse.current?.weather?.get(0)?.description
 
@@ -169,7 +218,7 @@ class HomeFragment : Fragment() {
         val geoCoder = Geocoder(requireContext(), Locale.getDefault())
         val address = geoCoder.getFromLocation(lat, long, 3)
 
-        cityName = address!![0].locality
+        cityName = address!![0].adminArea
         return cityName
     }
 }

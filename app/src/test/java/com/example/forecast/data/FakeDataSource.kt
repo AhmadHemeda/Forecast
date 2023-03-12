@@ -1,8 +1,9 @@
 package com.example.forecast.data
 
-import com.example.forecast.data.model.CurrentWeather
-import com.example.forecast.data.model.FavoriteCity
-import com.example.forecast.data.model.OpenWeatherResponse
+import com.example.forecast.data.model.custom.CurrentWeather
+import com.example.forecast.data.model.custom.FavoriteCity
+import com.example.forecast.data.model.response.OpenWeatherResponse
+import com.example.forecast.data.repo.DataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.Response

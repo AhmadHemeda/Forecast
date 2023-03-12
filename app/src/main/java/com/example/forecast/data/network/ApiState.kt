@@ -1,6 +1,6 @@
 package com.example.forecast.data.network
 
-import com.example.forecast.data.model.OpenWeatherResponse
+import com.example.forecast.data.model.response.OpenWeatherResponse
 
 sealed class ApiState {
     class Success(val data: OpenWeatherResponse) : ApiState()
