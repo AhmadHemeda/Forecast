@@ -5,10 +5,10 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "alert_table")
 data class AlertDateTime(
-    val dateFrom: Long,
-    val timeFrom: Long,
-    val dateTo: Long,
-    val timeTo: Long,
+    var dateFrom: Long = 0,
+    var timeFrom: Long = 0,
+    var dateTo: Long = 0,
+    var timeTo: Long = 0,
 ) {
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0

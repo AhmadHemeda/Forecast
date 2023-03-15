@@ -6,7 +6,9 @@ import kotlinx.coroutines.flow.Flow
 interface INotificationRepo {
     fun getAllDatesTimes(): Flow<List<AlertDateTime>>
 
-    suspend fun insertDateTime(alertDateTime: AlertDateTime)
+    suspend fun getDateTime(id: Int): AlertDateTime
 
-    suspend fun deleteDateTime(alertDateTime: AlertDateTime)
+    suspend fun insertDateTime(alertDateTime: AlertDateTime): Long
+
+    suspend fun deleteDateTime(id: Int)
 }

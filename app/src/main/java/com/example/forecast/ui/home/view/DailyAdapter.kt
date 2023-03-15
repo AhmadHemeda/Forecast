@@ -12,9 +12,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.forecast.data.model.response.Daily
 import com.example.forecast.data.utils.IconMapper
+import com.example.forecast.data.utils.getCurrentLocale
 import com.example.forecast.databinding.DailyItemBinding
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.format.TextStyle
 
 class DailyAdapter(
     val unit: String,
@@ -40,13 +42,8 @@ class DailyAdapter(
     override fun onBindViewHolder(holder: DailyAdapter.DailyViewHolder, position: Int) {
         val currentDailyWeatherResponse = differ.currentList[position]
 
-//        val iconLink =
-//            "https://openweathermap.org/img/w/${currentDailyWeatherResponse.weather[0].icon}.png"
-//        Glide.with(context).load(iconLink)
-//            .into(holder.dailyItemBinding.imageViewConditionIconDaily)
         val icon = currentDailyWeatherResponse.weather[0].icon
 
-        holder.dailyItemBinding.imageViewConditionIconDaily.setImageResource(IconMapper.getWeatherIcon(icon))
 
         val unit: String = when (tempUnit) {
             "stander" -> " K"
@@ -58,7 +55,9 @@ class DailyAdapter(
         val simpleDateFormatDate = SimpleDateFormat("yyyy-MM-dd")
         val date = simpleDateFormatDate.format(timeStamp)
         val localDate = LocalDate.parse(date)
-        val dayName = localDate.dayOfWeek
+        val dayName = localDate.dayOfWeek.getDisplayName(TextStyle.FULL, getCurrentLocale(context))
+
+        holder.dailyItemBinding.imageViewConditionIconDaily.setImageResource(IconMapper.getWeatherIcon(icon))
 
         holder.dailyItemBinding.textViewTemperatureDailyMax.text =
             currentDailyWeatherResponse.temp.max.toInt().toString().plus(unit)
@@ -69,7 +68,7 @@ class DailyAdapter(
         holder.dailyItemBinding.textViewDescriptionDaily.text =
             currentDailyWeatherResponse.weather[0].description
 
-        holder.dailyItemBinding.textViewDateDaily.text = dayName.name.lowercase()
+        holder.dailyItemBinding.textViewDateDaily.text = dayName
     }
 
     override fun getItemCount(): Int {

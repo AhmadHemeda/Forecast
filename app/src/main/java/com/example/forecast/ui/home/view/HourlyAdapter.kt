@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.forecast.data.model.response.Hourly
 import com.example.forecast.data.utils.IconMapper
+import com.example.forecast.data.utils.getCurrentLocale
 import com.example.forecast.databinding.HourlyItemBinding
 import java.text.SimpleDateFormat
 
@@ -36,14 +37,8 @@ class HourlyAdapter(
     override fun onBindViewHolder(holder: HourlyAdapter.HourlyViewHolder, position: Int) {
         val currentHourlyWeatherResponse = differ.currentList[position]
 
-//        val iconLink =
-//            "https://openweathermap.org/img/w/${currentHourlyWeatherResponse.weather[0].icon}.png"
-//        Glide.with(context).load(iconLink)
-//            .into(holder.hourlyItemBinding.imageViewConditionIconHourly)
-
         val icon = currentHourlyWeatherResponse.weather[0].icon
 
-        holder.hourlyItemBinding.imageViewConditionIconHourly.setImageResource(IconMapper.getWeatherIcon(icon))
 
         val unit: String = when (tempUnit) {
             "stander" -> " K"
@@ -52,8 +47,14 @@ class HourlyAdapter(
         }
 
         val timeStamp = currentHourlyWeatherResponse.dt.toLong().times(1000)
-        val simpleDateFormatTime = SimpleDateFormat("hh aa")
+        val simpleDateFormatTime = SimpleDateFormat("hh aa", getCurrentLocale(context))
         val time = simpleDateFormatTime.format(timeStamp)
+
+        holder.hourlyItemBinding.imageViewConditionIconHourly.setImageResource(
+            IconMapper.getWeatherIcon(
+                icon
+            )
+        )
 
         holder.hourlyItemBinding.textViewTemperatureHourly.text =
             currentHourlyWeatherResponse.temp.toInt().toString().plus(unit)

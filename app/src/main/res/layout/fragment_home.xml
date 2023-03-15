@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -13,6 +15,7 @@
             android:id="@+id/cardView_home"
             android:layout_width="match_parent"
             android:layout_height="450dp"
+            android:layout_margin="8dp"
             app:cardCornerRadius="30dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
@@ -28,7 +31,7 @@
                     android:id="@+id/textView_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
+                    android:layout_margin="20dp"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
@@ -38,7 +41,7 @@
                     android:id="@+id/textView_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
+                    android:layout_margin="20dp"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/textView_date"
@@ -46,12 +49,10 @@
 
                 <ImageView
                     android:id="@+id/imageView_condition_icon"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_margin="8dp"
-                    app:layout_constraintBottom_toTopOf="@id/textView_temperature"
+                    android:layout_width="150dp"
+                    android:layout_height="175dp"
+                    android:layout_margin="20dp"
                     app:layout_constraintEnd_toEndOf="@id/textView_temperature"
-                    app:layout_constraintStart_toStartOf="@id/textView_temperature"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:src="@drawable/ic_weather_sunny"
                     tools:tint="#f9a920" />
@@ -60,7 +61,7 @@
                     android:id="@+id/textView_temperature"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
+                    android:layout_margin="20dp"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Headline2"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -73,6 +74,7 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="8dp"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                    app:layout_constraintEnd_toEndOf="@id/textView_temperature"
                     app:layout_constraintStart_toStartOf="@id/textView_temperature"
                     app:layout_constraintTop_toBottomOf="@id/textView_temperature"
                     tools:text="Feels like 20.4°C" />
@@ -81,9 +83,9 @@
                     android:id="@+id/textView_description"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
+                    android:layout_margin="20dp"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Headline4"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/textView_city"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintStart_toStartOf="parent"
@@ -94,10 +96,11 @@
                     android:id="@+id/textView_city"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
+                    android:layout_margin="20dp"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="@id/textView_description"
+                    app:layout_constraintStart_toStartOf="@+id/textView_description"
                     tools:text="Tanta" />
 
 
@@ -117,7 +120,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/teal_200">
+                android:background="@color/light_blue">
 
                 <ImageView
                     android:id="@+id/imageView_wind_icon"
@@ -170,7 +173,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/teal_200">
+                android:background="@color/light_blue">
 
                 <ImageView
                     android:id="@+id/imageView_clouds_icon"
@@ -224,7 +227,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/teal_700">
+                android:background="@color/light_blue">
 
                 <ImageView
                     android:id="@+id/imageView_pressure_icon"
@@ -277,7 +280,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/teal_700">
+                android:background="@color/light_blue">
 
                 <ImageView
                     android:id="@+id/imageView_visibility_icon"
@@ -329,7 +332,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/teal_200">
+                android:background="@color/light_blue">
 
                 <ImageView
                     android:id="@+id/imageView_humidity_icon"
@@ -381,7 +384,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/teal_200">
+                android:background="@color/light_blue">
 
                 <ImageView
                     android:id="@+id/imageView_uvi_icon"
@@ -437,7 +440,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView_daily"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="850dp"
             android:layout_margin="8dp"
             android:orientation="vertical"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
@@ -445,6 +448,7 @@
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/recyclerView_hourly"
+            app:layout_constraintBottom_toBottomOf="parent"
             tools:listitem="@layout/daily_item" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

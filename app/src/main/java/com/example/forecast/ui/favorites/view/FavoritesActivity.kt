@@ -2,6 +2,7 @@ package com.example.forecast.ui.favorites.view
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.location.Geocoder
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -16,19 +17,22 @@ import com.example.forecast.data.utils.Constants
 import com.example.forecast.data.utils.Constants.Companion.API_KEY
 import com.example.forecast.data.utils.Constants.Companion.LATITUDE
 import com.example.forecast.data.utils.Constants.Companion.LONGITUDE
+import com.example.forecast.data.utils.IconMapper
+import com.example.forecast.data.utils.getCurrentLocale
 import com.example.forecast.databinding.ActivityFavoritesBinding
 import com.example.forecast.ui.home.view.DailyAdapter
 import com.example.forecast.ui.home.view.HourlyAdapter
 import com.example.forecast.ui.home.viewmodel.HomeViewModel
 import com.example.forecast.ui.home.viewmodel.HomeViewModelFactory
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class FavoritesActivity : AppCompatActivity() {
 
     private var _binding: ActivityFavoritesBinding? = null
     private val binding get() = _binding!!
 
-//    lateinit var homeViewModel: HomeViewModel
 
     override fun onCreate(
         savedInstanceState: Bundle?
@@ -43,9 +47,6 @@ class FavoritesActivity : AppCompatActivity() {
 
         val homeViewModel =
             ViewModelProvider(this, homeViewModelFactory)[HomeViewModel::class.java]
-
-//        homeViewModel =
-//            ViewModelProvider(this)[HomeViewModel::class.java]
 
         _binding = ActivityFavoritesBinding.inflate(layoutInflater)
         val root: View = binding.root
@@ -118,23 +119,61 @@ class FavoritesActivity : AppCompatActivity() {
             else -> " m/h"
         }
 
+        val timeStamp = openWeatherResponse?.current?.dt?.times(1000)
+
+        val simpleDateFormatDate = SimpleDateFormat("dd MMM", getCurrentLocale(this))
+        val date = simpleDateFormatDate.format(timeStamp)
+
+        val simpleDateFormatTime = SimpleDateFormat("hh:mm aa", getCurrentLocale(this))
+        val time = simpleDateFormatTime.format(timeStamp)
+
+        val icon = openWeatherResponse?.current?.weather?.get(0)?.icon
+
         binding.textViewTemperature.text =
             openWeatherResponse?.current?.temp?.toInt().toString().plus(tempUnit)
+
         binding.textViewFeelsLikeTemperature.text =
             openWeatherResponse?.current?.feelsLike?.toInt().toString().plus(tempUnit)
+
+        if (openWeatherResponse != null) {
+            binding.textViewCity.text =
+                getCityName(openWeatherResponse.lat, openWeatherResponse.lon)
+        }
 
         binding.textViewWind.text =
             openWeatherResponse?.current?.windSpeed.toString().plus(windSpeedUnit)
 
-        binding.textViewHumidity.text = openWeatherResponse?.current?.humidity.toString().plus(" %")
+        binding.textViewHumidity.text =
+            openWeatherResponse?.current?.humidity.toString().plus(" %")
+
         binding.textViewPressure.text =
             openWeatherResponse?.current?.pressure.toString().plus(" hPa")
 
-        binding.textViewDescription.text =
-            openWeatherResponse?.current?.weather?.get(0)?.description
+        binding.textViewClouds.text =
+            openWeatherResponse?.current?.clouds.toString().plus(" %")
 
-        val iconLink =
-            "https://openweathermap.org/img/w/${openWeatherResponse?.current?.weather?.get(0)?.icon}.png"
-        Glide.with(this).load(iconLink).into(binding.imageViewConditionIcon)
+        binding.textViewVisibility.text =
+            openWeatherResponse?.current?.visibility?.times(0.001)?.toInt().toString().plus(" km")
+
+        binding.textViewUvi.text =
+            openWeatherResponse?.current?.uvi.toString()
+
+        binding.textViewDate.text = date
+
+        binding.textViewTime.text = time
+
+        binding.imageViewConditionIcon.setImageResource(IconMapper.getWeatherIcon(icon!!))
+
+        binding.textViewDescription.text =
+            openWeatherResponse.current.weather[0].description
+    }
+
+    private fun getCityName(lat: Double, long: Double): String {
+        val cityName: String
+        val geoCoder = getCurrentLocale(this)?.let { Geocoder(this, it) }
+        val address = geoCoder?.getFromLocation(lat, long, 3)
+
+        cityName = address?.get(0)!!.locality
+        return cityName
     }
 }

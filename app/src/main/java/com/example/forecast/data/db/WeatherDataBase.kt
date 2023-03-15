@@ -5,6 +5,9 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.example.forecast.data.db.dao.AlertDateTimeDao
+import com.example.forecast.data.db.dao.CurrentWeatherDao
+import com.example.forecast.data.db.dao.FavoriteCityDAO
 import com.example.forecast.data.model.custom.AlertDateTime
 import com.example.forecast.data.model.custom.CurrentWeather
 import com.example.forecast.data.model.custom.FavoriteCity

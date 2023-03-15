@@ -1,5 +1,8 @@
 package com.example.forecast.data.db
 
+import com.example.forecast.data.db.dao.AlertDateTimeDao
+import com.example.forecast.data.db.dao.CurrentWeatherDao
+import com.example.forecast.data.db.dao.FavoriteCityDAO
 import com.example.forecast.data.model.custom.AlertDateTime
 import com.example.forecast.data.repo.DataSource
 import com.example.forecast.data.model.custom.CurrentWeather
@@ -15,7 +18,7 @@ class LocalDataSource(
 ) : DataSource {
     override suspend fun getWeatherDetails(
         lat: Double,
-        on: Double,
+        lon: Double,
         appid: String,
         unit: String
     ): Response<OpenWeatherResponse> {
@@ -50,11 +53,15 @@ class LocalDataSource(
         return alertDateTimeDao.getAllDatesTimes()
     }
 
-    override suspend fun insertDateTime(alertDateTime: AlertDateTime) {
-        alertDateTimeDao.insertDateTime(alertDateTime)
+    override suspend fun getDateTime(id: Int): AlertDateTime {
+        return alertDateTimeDao.getDateTime(id)
     }
 
-    override suspend fun deleteDateTime(alertDateTime: AlertDateTime) {
-        alertDateTimeDao.deleteDateTime(alertDateTime)
+    override suspend fun insertDateTime(alertDateTime: AlertDateTime): Long {
+        return alertDateTimeDao.insertDateTime(alertDateTime)
+    }
+
+    override suspend fun deleteDateTime(id: Int) {
+        alertDateTimeDao.deleteDateTime(id)
     }
 }

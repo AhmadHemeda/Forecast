@@ -1,6 +1,9 @@
 package com.example.forecast.data.model.response
 
+import com.google.gson.annotations.SerializedName
+
 data class OpenWeatherResponse(
+    @SerializedName("alerts")
     val alerts: List<Alert> = listOf(),
     val current: Current? = null,
     val daily: List<Daily> = listOf(),

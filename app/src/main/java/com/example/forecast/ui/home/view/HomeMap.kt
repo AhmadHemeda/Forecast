@@ -10,13 +10,9 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import com.example.forecast.R
 import com.example.forecast.data.utils.Constants
-import com.example.forecast.data.utils.Constants.Companion.KEY_LAT
-import com.example.forecast.data.utils.Constants.Companion.KEY_LNG
 import com.example.forecast.databinding.ActivityHomeMapBinding
-import com.example.forecast.ui.home.viewmodel.HomeViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback

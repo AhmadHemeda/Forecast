@@ -7,11 +7,6 @@
         android:title="@string/title_home" />
 
     <item
-        android:id="@+id/weekFragment"
-        android:icon="@drawable/ic_calendar_week_black_24dp"
-        android:title="@string/title_week" />
-
-    <item
         android:id="@+id/favoritesFragment"
         android:icon="@drawable/ic_favorite_black_24dp"
         android:title="@string/title_favorite" />

@@ -49,16 +49,16 @@ class FavoritesFragment : Fragment() {
         }
 
         val listener = object : FavoriteCityAdapter.OnCityClickListener {
-            override fun onCityClick(city: FavoriteCity) {
+            override fun onCityClick(favoriteCity: FavoriteCity) {
                 val intent = Intent(requireContext(), FavoritesActivity::class.java)
-                intent.putExtra(LATITUDE, city.latitude)
-                intent.putExtra(LONGITUDE, city.longitude)
+                intent.putExtra(LATITUDE, favoriteCity.latitude)
+                intent.putExtra(LONGITUDE, favoriteCity.longitude)
                 startActivity(intent)
             }
 
-            override fun onDeleteCity(city: FavoriteCity) {
+            override fun onDeleteCity(favoriteCity: FavoriteCity) {
                 favoriteViewModel.viewModelScope.launch {
-                    favoriteViewModel.deleteCity(city)
+                    favoriteViewModel.deleteCity(favoriteCity)
                 }
             }
         }

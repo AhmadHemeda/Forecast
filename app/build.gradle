@@ -89,6 +89,12 @@ dependencies {
     // WeatherLocation
     implementation "com.google.android.gms:play-services-location:21.0.1"
 
+    // Lottie
+    implementation 'com.airbnb.android:lottie:5.2.0'
+
+    // Work Manager
+    implementation "androidx.work:work-runtime-ktx:2.8.0"
+
     /*
     Addition Libs
     */

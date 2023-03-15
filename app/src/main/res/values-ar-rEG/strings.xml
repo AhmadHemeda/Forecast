@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Forecast</string>
-    <string name="title_home">Home</string>
+    <string name="app_name">الطقس</string>
+    <string name="title_home">الصفحة الرئيسية</string>
     <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
-    <string name="title_settings">Settings</string>
-    <string name="title_favorite">Favorite</string>
+    <string name="title_notifications">الإشعارات</string>
+    <string name="title_settings">الإعدادات</string>
+    <string name="title_favorite">المفضلة</string>
     <string name="title_week">Week</string>
     <string name="tv_wind">الرياح</string>
     <string name="tv_pressure">الضغط</string>
@@ -14,4 +14,54 @@
     <string name="tv_language">اللغة</string>
     <string name="rb_arabic">العربية</string>
     <string name="rb_english">الإنجليزية</string>
+    <string name="tv_temperature">درجة الحرارة</string>
+    <string name="rb_celsius">مئوية</string>
+    <string name="rb_kelvin">كلفن</string>
+    <string name="rb_fahrenheit">فهرنهايت</string>
+    <string name="tv_wind_speed">سرعة الرياح</string>
+    <string name="rb_meter_sec">متر / ثانية</string>
+    <string name="rb_miles_hour">ميل / ساعة</string>
+    <string name="title_activity_maps">MapsActivity</string>
+    <string name="btn_save">حفظ</string>
+    <string name="tv_from">من</string>
+    <string name="tv_to">إلى</string>
+    <string name="rb_alarm">منبه</string>
+    <string name="rb_notification">إشعارات</string>
+    <string name="btn_save_alert">حفظ</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">الرسائل</string>
+    <string name="sync_header">المزامنة</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">مزامنة البريد الإلكتروني بشكل دوري</string>
+    <string name="attachment_title">تحميل المرفقات الواردة</string>
+    <string name="attachment_summary_on">قم بتنزيل المرفقات تلقائيا لرسائل البريد الإلكتروني الواردة</string>
+    <string name="attachment_summary_off">قم بتنزيل المرفقات فقط عند طلبها يدويا</string>
+    <string name="tv_location">الموقع</string>
+    <string name="rb_gps">نظام تحديد المواقع</string>
+    <string name="rb_maps">الخرائط</string>
+    <string name="title_activity_home_map">HomeMap</string>
+    <string name="tv_clouds">الغيوم</string>
+    <string name="tv_visibility">الرؤية</string>
+    <string name="tv_uvi">أ.ف.ب</string>
+    <string name="tv_from_date">التاريخ</string>
+    <string name="tv_to_date">التاريخ</string>
+    <string name="tv_from_time">الوقت</string>
+    <string name="tv_to_time">الوقت</string>
+    <string name="title_activity_notifications_map">NotificationsMap</string>
+    <string name="tv_favorite_cities">المدن المفضلة</string>
+    <string name="tv_notifications">الإخطارات</string>
+    <string name="btn_dismiss">رفض</string>
+
+    <string name="channel_name">"إشعار تطبيق الطقس"</string>
+    <string name="channel_description">إشعار التنبيه</string>
+    <string name="tv_mode">الوضع</string>
+    <string name="rb_light">فاتح</string>
+    <string name="rb_dark">مظلم</string>
 </resources>

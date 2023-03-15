@@ -1,5 +1,6 @@
 package com.example.forecast.data
 
+import com.example.forecast.data.model.custom.AlertDateTime
 import com.example.forecast.data.model.custom.CurrentWeather
 import com.example.forecast.data.model.custom.FavoriteCity
 import com.example.forecast.data.model.response.OpenWeatherResponse
@@ -10,12 +11,13 @@ import retrofit2.Response
 
 class FakeDataSource(
     var favoriteCities: MutableList<FavoriteCity> = mutableListOf(),
-    var currentWeatherList: MutableList<CurrentWeather> = mutableListOf()
+    var currentWeatherList: MutableList<CurrentWeather> = mutableListOf(),
+    var alertDateTimeList: MutableList<AlertDateTime> = mutableListOf()
 ) : DataSource {
 
     override suspend fun getWeatherDetails(
         lat: Double,
-        on: Double,
+        lon: Double,
         appid: String,
         unit: String
     ): Response<OpenWeatherResponse> {
@@ -44,6 +46,18 @@ class FakeDataSource(
 
     override suspend fun deleteCity(favoriteCity: FavoriteCity) {
         favoriteCities.remove(favoriteCity)
+    }
+
+    override fun getAllDatesTimes(): Flow<List<AlertDateTime>> = flow {
+        emit(alertDateTimeList)
+    }
+
+    override suspend fun insertDateTime(alertDateTime: AlertDateTime) {
+        alertDateTimeList.add(alertDateTime)
+    }
+
+    override suspend fun deleteDateTime(alertDateTime: AlertDateTime) {
+        alertDateTimeList.remove(alertDateTime)
     }
 
 }

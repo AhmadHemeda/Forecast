@@ -42,16 +42,16 @@ class FavoriteCityAdapter(val context: Context, onCityClickListener: OnCityClick
         holder: FavoriteCityAdapter.FavoriteCityViewHolder,
         position: Int
     ) {
-        val city = differ.currentList[position]
+        val favoriteCity = differ.currentList[position]
 
-        holder.favoriteCityItemBinding.textViewCityName.text = city.city
+        holder.favoriteCityItemBinding.textViewCityName.text = favoriteCity.city
 
         holder.itemView.setOnClickListener {
-            listener.onCityClick(city)
+            listener.onCityClick(favoriteCity)
         }
 
         holder.favoriteCityItemBinding.imageButtonDelete.setOnClickListener {
-            listener.onDeleteCity(city)
+            listener.onDeleteCity(favoriteCity)
         }
     }
 
@@ -60,7 +60,7 @@ class FavoriteCityAdapter(val context: Context, onCityClickListener: OnCityClick
     }
 
     interface OnCityClickListener {
-        fun onCityClick(city: FavoriteCity)
-        fun onDeleteCity(city: FavoriteCity)
+        fun onCityClick(favoriteCity: FavoriteCity)
+        fun onDeleteCity(favoriteCity: FavoriteCity)
     }
 }

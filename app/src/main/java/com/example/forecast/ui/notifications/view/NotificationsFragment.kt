@@ -1,33 +1,50 @@
 package com.example.forecast.ui.notifications.view
 
 import android.app.*
-import android.content.Context.NOTIFICATION_SERVICE
-import android.os.Build
+import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.text.format.DateFormat
-import android.util.Log
+import android.provider.Settings
 import android.view.*
-import androidx.annotation.RequiresApi
+import android.widget.TimePicker
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.*
+import com.example.forecast.data.model.custom.AlertDateTime
 import com.example.forecast.data.repo.NotificationRepo
-import com.example.forecast.data.utils.Constants.Companion.CHANNEL_ID
-import com.example.forecast.databinding.DialogAlertBinding
+import com.example.forecast.data.utils.Constants.Companion.ALARM_DIALOG
+import com.example.forecast.data.utils.Constants.Companion.SET_ALARM
+import com.example.forecast.data.utils.convertDateToLong
+import com.example.forecast.data.utils.dateConverterToString
+import com.example.forecast.data.utils.getCurrentLocale
+import com.example.forecast.data.utils.timeConverterToString
+import com.example.forecast.databinding.AlertDialogBinding
 import com.example.forecast.databinding.FragmentNotificationsBinding
+import com.example.forecast.ui.notifications.alert.data.AlertPeriodicWorkManger
 import com.example.forecast.ui.notifications.viewmodel.NotificationViewModelFactory
 import com.example.forecast.ui.notifications.viewmodel.NotificationsViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
-
-private const val TAG = "NotificationsFragment"
+import java.util.concurrent.TimeUnit
 
 class NotificationsFragment : Fragment() {
 
     private var _binding: FragmentNotificationsBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var dialogBinding: DialogAlertBinding
+    private lateinit var dialogBinding: AlertDialogBinding
 
+    private lateinit var alertDateTime: AlertDateTime
+
+    private var isFirst: Boolean = true
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -45,228 +62,173 @@ class NotificationsFragment : Fragment() {
         _binding = FragmentNotificationsBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        dialogBinding = DialogAlertBinding.inflate(inflater, container, false)
+        alertDateTime = AlertDateTime()
+
+        dialogBinding = AlertDialogBinding.inflate(inflater, container, false)
+
+        val listener = object : NotificationsAdapter.OnDateTimeClickListener {
+            override fun onDeleteDateTime(alertDateTime: AlertDateTime) {
+                notificationsViewModel.viewModelScope.launch {
+                    notificationsViewModel.deleteDateTime(alertDateTime)
+
+                    WorkManager.getInstance().cancelAllWorkByTag("${alertDateTime.id}")
+                }
+            }
+        }
+
+        val notificationsAdapter = NotificationsAdapter(requireContext(), listener)
+
+        lifecycleScope.launch {
+            notificationsViewModel.stateGetAllDatesTimes.collect { alertDateTimeList ->
+                alertDateTimeList.reversed()
+
+                notificationsAdapter.differ.submitList(alertDateTimeList.toList())
+                binding.recyclerViewAlerts.apply {
+                    adapter = notificationsAdapter
+                    layoutManager = LinearLayoutManager(requireContext())
+                }
+            }
+        }
 
         binding.floatingActionButtonAlert.setOnClickListener {
             getDialog().show()
         }
 
-        pickDatesAndTimes()
+        dialogBinding.cardViewFromDtPicker.setOnClickListener {
+            showDatePicker(true)
+        }
 
+        dialogBinding.cardViewToDtPicker.setOnClickListener {
+            showDatePicker(false)
+        }
 
+        dialogBinding.buttonSaveAlert.setOnClickListener {
+            notificationsViewModel.insertDateTime(alertDateTime)
+        }
+
+        settingsManager()
+
+        lifecycleScope.launch {
+            notificationsViewModel.stateInsertDateTime.collectLatest { id ->
+                setPeriodWorkManager(id)
+            }
+        }
 
         return root
     }
 
-    private fun pickDatesAndTimes() {
-        pickDateFrom()
-        pickDateTo()
-        pickTimeFrom()
-        pickTimeTo()
+    private fun showDatePicker(isFrom: Boolean) {
+        val calender = Calendar.getInstance()
+        val year = calender[Calendar.YEAR]
+        val month = calender[Calendar.MONTH]
+        val day = calender[Calendar.DAY_OF_MONTH]
+        val myDateListener =
+            DatePickerDialog.OnDateSetListener { view, year, month, day ->
+                if (view.isShown) {
+                    val date = "$day/${month + 1}/$year"
+                    showTimePicker(isFrom, convertDateToLong(date, requireContext()))
+                }
+            }
+        val datePickerDialog = DatePickerDialog(
+            requireContext(), android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
+            myDateListener, year, month, day
+        )
+        datePickerDialog.setTitle("Choose date")
+        datePickerDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+        datePickerDialog.show()
     }
 
-    private fun pickDateFrom() {
-        val calendar = Calendar.getInstance()
+    private fun showTimePicker(isFrom: Boolean, date: Long) {
+        val rightNow = Calendar.getInstance()
+        val currentHour = rightNow.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = rightNow.get(Calendar.MINUTE)
+        val listener: (TimePicker?, Int, Int) -> Unit =
+            { _: TimePicker?, hour: Int, minute: Int ->
+                val time = TimeUnit.MINUTES.toSeconds(minute.toLong()) +
+                        TimeUnit.HOURS.toSeconds(hour.toLong()) - (3600L * 2)
+                val dateString = dateConverterToString(date, requireContext())
+                val timeString = timeConverterToString(time, requireContext())
+                val text = dateString.plus("\n").plus(timeString)
+                if (isFrom) {
+                    alertDateTime.timeFrom = time
+                    alertDateTime.dateFrom = date
+                    dialogBinding.textViewDateFrom.text = text
+                } else {
+                    alertDateTime.timeTo = time
+                    alertDateTime.dateTo = date
+                    dialogBinding.textViewDateTo.text = text
+                }
+            }
 
-        val datePickerFrom = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
-            calendar.set(Calendar.YEAR, year)
-            calendar.set(Calendar.MONTH, month)
-            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-            updateDateFrom(calendar)
-        }
+        val timePickerDialog = TimePickerDialog(
+            requireContext(), android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
+            listener, currentHour, currentMinute, false
+        )
 
-        dialogBinding.cardViewFromDatePicker.setOnClickListener {
-            DatePickerDialog(
-                requireContext(),
-                datePickerFrom,
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-            ).show()
-        }
+        timePickerDialog.setTitle("Choose time")
+        timePickerDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        timePickerDialog.show()
     }
 
-    private fun updateDateFrom(calendar: Calendar) {
-        val format = "dd MMM"
-        val simpleDateFormat = SimpleDateFormat(format, Locale.UK)
-        val data = calendar
-        Log.i(TAG, "updateDateFrom: ${data.time}")
-        dialogBinding.textViewDateFrom.text = simpleDateFormat.format(data.time)
-    }
+    private fun settingsManager() {
+        val sharedPreferences =
+            requireContext().getSharedPreferences(ALARM_DIALOG, Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
 
-    private fun pickDateTo() {
-        val calendar = Calendar.getInstance()
+        val isAlarmClicked = sharedPreferences.getBoolean(SET_ALARM, false)
 
-        val datePickerTo = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
-            calendar.set(Calendar.YEAR, year)
-            calendar.set(Calendar.MONTH, month)
-            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-            updateDateTo(calendar)
+        if (isAlarmClicked) {
+            dialogBinding.radioButtonNotification.isChecked = false
+            dialogBinding.radioButtonAlarm.isChecked = true
+        } else {
+            dialogBinding.radioButtonNotification.isChecked = true
+            dialogBinding.radioButtonAlarm.isChecked = false
         }
 
-        dialogBinding.cardViewToDatePicker.setOnClickListener {
-            DatePickerDialog(
-                requireContext(),
-                datePickerTo,
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-            ).show()
+        dialogBinding.radioButtonNotification.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                editor.putBoolean(SET_ALARM, false)
+                editor.apply()
+            }
         }
-    }
+        dialogBinding.radioButtonAlarm.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                editor.putBoolean(SET_ALARM, true)
+                editor.apply()
 
-    private fun updateDateTo(calendar: Calendar) {
-        val format = "dd MMM"
-        val simpleDateFormat = SimpleDateFormat(format, Locale.UK)
-        dialogBinding.textViewDateTo.text = simpleDateFormat.format(calendar.time)
-    }
-
-    private fun pickTimeFrom() {
-        val calendar = Calendar.getInstance()
-
-        val timePickerFrom = TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
-            calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
-            calendar.set(Calendar.MINUTE, minute)
-            updateTimeFrom(calendar)
-        }
-
-        dialogBinding.cardViewFromTimePicker.setOnClickListener {
-            TimePickerDialog(
-                context,
-                timePickerFrom,
-                calendar.get(Calendar.HOUR_OF_DAY),
-                calendar.get(Calendar.MINUTE),
-                false
-            ).show()
-        }
-    }
-
-    private fun updateTimeFrom(calendar: Calendar) {
-        val format = "hh:mm aa"
-        val simpleDateFormat = SimpleDateFormat(format, Locale.UK)
-        dialogBinding.textViewTimeFrom.text = simpleDateFormat.format(calendar.time)
-    }
-
-    private fun pickTimeTo() {
-        val calendar = Calendar.getInstance()
-
-        val timePickerTo = TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
-            calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
-            calendar.set(Calendar.MINUTE, minute)
-            updateTimeTo(calendar)
-        }
-
-        dialogBinding.cardViewToTimePicker.setOnClickListener {
-            TimePickerDialog(
-                context,
-                timePickerTo,
-                calendar.get(Calendar.HOUR_OF_DAY),
-                calendar.get(Calendar.MINUTE),
-                false
-            ).show()
+                checkPermissionOfOverlay()
+            }
         }
     }
 
-    private fun updateTimeTo(calendar: Calendar) {
-        val format = "hh:mm aa"
-        val simpleDateFormat = SimpleDateFormat(format, Locale.UK)
-        dialogBinding.textViewTimeTo.text = simpleDateFormat.format(calendar.time)
-    }
+    private fun checkPermissionOfOverlay() {
+        if (!Settings.canDrawOverlays(requireContext())) {
 
-//    private fun getDateTimeCalendar() {
-//        val calendar = Calendar.getInstance()
-//        year = calendar.get(Calendar.YEAR)
-//        month = calendar.get(Calendar.MONTH)
-//        day = calendar.get(Calendar.DAY_OF_MONTH)
-//        hour = calendar.get(Calendar.HOUR)
-//        minute = calendar.get(Calendar.MINUTE)
-//    }
+            val alertDialogBuilder = MaterialAlertDialogBuilder(requireContext())
 
-//    private fun pickDateTimeTo() {
-//        dialogBinding.cardViewToPicker.setOnClickListener {
-//            getDateTimeCalendar()
-//
-//            DatePickerDialog(requireContext(), this, year, month, day).show()
-//        }
-//    }
+            alertDialogBuilder
+                .setTitle("Display on top")
+                .setMessage("You Should let us to draw on top")
+                .setPositiveButton("Okay") { dialog: DialogInterface, _: Int ->
 
-//    private fun pickDateTimeFrom() {
-//        dialogBinding.cardViewFromPicker.setOnClickListener {
-//            getDateTimeCalendar()
-//
-//            DatePickerDialog(requireContext(), this, year, month, day).show()
-//        }
-//    }
+                    val intent = Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + requireContext().applicationContext.packageName)
+                    )
+                    startActivityForResult(intent, 1)
+                    dialog.dismiss()
 
-//    private fun scheduleNotification() {
-//        val intent = Intent(context, Alert::class.java)
-//        val title = "Weather Alert"
-//        val message = "Weather is fine, no alerts in the specified period"
-//        intent.putExtra(TITLE_EXTRA, title)
-//        intent.putExtra(MESSAGE_EXTRA, message)
-
-//        val pendingIntent = PendingIntent.getBroadcast(
-//            context,
-//            NOTIFICATION_ID,
-//            intent,
-//            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-//        )
-
-//        val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
-//        val time = getTime()
-//        alarmManager.setExactAndAllowWhileIdle(
-//            AlarmManager.RTC_WAKEUP,
-//            time,
-//            pendingIntent
-//        )
-//        showAlert(time, title, message)
-//    }
-
-    private fun showAlert(time: Long, title: String, message: String) {
-        val date = Date(time)
-        val dateFormat = DateFormat.getLongDateFormat(context)
-        val timeFormat = DateFormat.getTimeFormat(context)
-
-        AlertDialog.Builder(context)
-            .setTitle("Notification Scheduled")
-            .setMessage(
-                "Title: $title" +
-                        "\nMessage: $message" +
-                        "\nAt: " + dateFormat.format(date) + " " + timeFormat.format(date)
-            )
-            .setPositiveButton("Okay") { _, _ -> }
-            .show()
-    }
-
-//    private fun getTime(): Long {
-//        val minute = savedMinute
-//        val hour = savedHour
-//        val day = savedDay
-//        val month = savedMonth
-//        val year = savedYear
-
-//        val calendar = Calendar.getInstance()
-//        calendar.set(year, month, day, hour, minute)
-//        return calendar.timeInMillis
-//    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun createNotificationChannel() {
-        val name = "Notification Channel"
-        val description = "A Description of the Channel"
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val channel = NotificationChannel(CHANNEL_ID, name, importance)
-        channel.description = description
-        val notificationManager =
-            requireActivity().getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
+                }.setNegativeButton("No") { dialog: DialogInterface, _: Int ->
+                    dialog.dismiss()
+                }.show()
+        }
     }
 
     private fun getDialog(): Dialog {
         val dialog = Dialog(requireContext())
 
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setCancelable(false)
+        dialog.setCancelable(true)
         dialog.setContentView(dialogBinding.root)
 
         val layoutParams = dialog.window!!.attributes
@@ -277,9 +239,33 @@ class NotificationsFragment : Fragment() {
         return dialog
     }
 
+    private fun setPeriodWorkManager(id: Long) {
+        if (id == -1L) return
+
+        val data = Data.Builder()
+        data.putLong("id", id)
+
+        val constraints = Constraints.Builder()
+            .setRequiresBatteryNotLow(true)
+            .build()
+
+        val periodicWorkRequest = PeriodicWorkRequest.Builder(
+            AlertPeriodicWorkManger::class.java,
+            24, TimeUnit.HOURS
+        )
+            .setConstraints(constraints)
+            .setInputData(data.build())
+            .build()
+
+        WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork(
+            "$id",
+            ExistingPeriodicWorkPolicy.REPLACE,
+            periodicWorkRequest
+        )
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        getDialog().dismiss()
         _binding = null
     }
 }

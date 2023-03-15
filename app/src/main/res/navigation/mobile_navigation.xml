@@ -9,11 +9,7 @@
         android:name="com.example.forecast.ui.home.view.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" />
-    <fragment
-        android:id="@+id/weekFragment"
-        android:name="com.example.forecast.ui.week.WeekFragment"
-        android:label="fragment_week"
-        tools:layout="@layout/fragment_week" />
+
     <fragment
         android:id="@+id/favoritesFragment"
         android:name="com.example.forecast.ui.favorites.view.FavoritesFragment"
@@ -24,16 +20,7 @@
         android:name="com.example.forecast.ui.notifications.view.NotificationsFragment"
         android:label="fragment_notifications"
         tools:layout="@layout/fragment_notifications" />
-    <fragment
-        android:id="@+id/detailsWeekFragment"
-        android:name="com.example.forecast.ui.weather.week.details.DetailsWeekFragment"
-        android:label="fragment_details_week"
-        tools:layout="@layout/fragment_details_week" />
-    <fragment
-        android:id="@+id/detailsFavoritesFragment"
-        android:name="com.example.forecast.ui.weather.favorites.details.DetailsFavoritesFragment"
-        android:label="fragment_details_favorites"
-        tools:layout="@layout/fragment_details_favorites" />
+
     <fragment
         android:id="@+id/settingsFragment"
         android:name="com.example.forecast.ui.settings.SettingsFragment"

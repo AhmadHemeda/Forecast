@@ -1,6 +1,7 @@
 package com.example.forecast.ui.home.view
 
 import android.annotation.SuppressLint
+import android.app.ProgressDialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.location.Geocoder
@@ -8,17 +9,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
-import com.bumptech.glide.Glide
 import com.example.forecast.data.model.custom.CurrentWeather
 import com.example.forecast.data.model.response.OpenWeatherResponse
 import com.example.forecast.data.network.ApiState
 import com.example.forecast.data.repo.CurrentWeatherRepo
-import com.example.forecast.data.repo.FavoriteCityRepo
 import com.example.forecast.data.repo.WeatherRepo
 import com.example.forecast.data.utils.Constants.Companion.API_KEY
 import com.example.forecast.data.utils.Constants.Companion.LATITUDE
@@ -27,13 +25,11 @@ import com.example.forecast.data.utils.Constants.Companion.SHARED_PREFERENCE
 import com.example.forecast.data.utils.Constants.Companion.TEMPERATURE
 import com.example.forecast.data.utils.Constants.Companion.WIND_SPEED
 import com.example.forecast.data.utils.IconMapper
+import com.example.forecast.data.utils.getCurrentLocale
 import com.example.forecast.databinding.FragmentHomeBinding
 import com.example.forecast.databinding.FragmentSettingsBinding
-import com.example.forecast.ui.favorites.viewmodel.FavoritesViewModel
-import com.example.forecast.ui.favorites.viewmodel.FavoritesViewModelFactory
 import com.example.forecast.ui.home.viewmodel.HomeViewModel
 import com.example.forecast.ui.home.viewmodel.HomeViewModelFactory
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -75,6 +71,10 @@ class HomeFragment : Fragment() {
         val hourlyAdapter = HourlyAdapter(unit!!, requireContext())
         val dailyAdapter = DailyAdapter(unit, requireContext())
 
+        val progressDialog: ProgressDialog = ProgressDialog(requireContext())
+        progressDialog.setTitle("Wait")
+        progressDialog.setMessage("Data is loading, please wait")
+
         homeViewModel.getWeatherDetails(latitude!!, longitude!!, API_KEY, unit)
 
         lifecycleScope.launch {
@@ -109,6 +109,8 @@ class HomeFragment : Fragment() {
                                     )
                                 )
                             }
+
+                            progressDialog.dismiss()
                         }
 
                         is ApiState.Failure -> {
@@ -134,10 +136,12 @@ class HomeFragment : Fragment() {
                                     dailyAdapter.differ.submitList(date.daily)
                                 }
                             }
+
+                            progressDialog.dismiss()
                         }
 
                         is ApiState.Loading -> {
-                            Toast.makeText(context, "Loading", Toast.LENGTH_SHORT).show()
+                            progressDialog.show()
                         }
                     }
                 }
@@ -164,16 +168,15 @@ class HomeFragment : Fragment() {
             else -> " m/h"
         }
 
-        val iconLink =
-            "https://openweathermap.org/img/w/${openWeatherResponse.current?.weather?.get(0)?.icon}.png"
-
         val timeStamp = openWeatherResponse.current?.dt?.times(1000)
 
-        val simpleDateFormatDate = SimpleDateFormat("dd MMM")
+        val simpleDateFormatDate = SimpleDateFormat("dd MMM", getCurrentLocale(requireContext()))
         val date = simpleDateFormatDate.format(timeStamp)
 
-        val simpleDateFormatTime = SimpleDateFormat("hh:mm aa")
+        val simpleDateFormatTime = SimpleDateFormat("hh:mm aa", getCurrentLocale(requireContext()))
         val time = simpleDateFormatTime.format(timeStamp)
+
+        val icon = openWeatherResponse.current?.weather?.get(0)?.icon
 
         binding.textViewTemperature.text =
             openWeatherResponse.current?.temp?.toInt().toString().plus(tempUnit)
@@ -206,13 +209,7 @@ class HomeFragment : Fragment() {
 
         binding.textViewTime.text = time
 
-        val icon = openWeatherResponse.current?.weather?.get(0)?.icon
-
         binding.imageViewConditionIcon.setImageResource(IconMapper.getWeatherIcon(icon!!))
-
-//        holder.dailyItemBinding.imageViewConditionIconDaily.setImageResource(IconMapper.getWeatherIcon(icon))
-//
-//        Glide.with(requireContext()).load(iconLink).into(binding.imageViewConditionIcon)
     }
 
     override fun onDestroyView() {
@@ -222,10 +219,10 @@ class HomeFragment : Fragment() {
 
     private fun getCityName(lat: Double, long: Double): String {
         val cityName: String
-        val geoCoder = Geocoder(requireContext(), Locale.getDefault())
-        val address = geoCoder.getFromLocation(lat, long, 3)
+        val geoCoder = getCurrentLocale(requireContext())?.let { Geocoder(requireContext(), it) }
+        val address = geoCoder?.getFromLocation(lat, long, 3)
 
-        cityName = address!![0].adminArea
+        cityName = address?.get(0)!!.locality
         return cityName
     }
 }

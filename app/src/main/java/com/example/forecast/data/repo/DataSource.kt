@@ -11,7 +11,7 @@ interface DataSource {
 
     suspend fun getWeatherDetails(
         lat: Double,
-        on: Double,
+        lon: Double,
         appid: String,
         unit: String,
     ): Response<OpenWeatherResponse>
@@ -30,7 +30,9 @@ interface DataSource {
 
     fun getAllDatesTimes(): Flow<List<AlertDateTime>>
 
-    suspend fun insertDateTime(alertDateTime: AlertDateTime)
+    suspend fun getDateTime(id: Int): AlertDateTime
 
-    suspend fun deleteDateTime(alertDateTime: AlertDateTime)
+    suspend fun insertDateTime(alertDateTime: AlertDateTime): Long
+
+    suspend fun deleteDateTime(id: Int)
 }

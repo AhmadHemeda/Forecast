@@ -46,11 +46,15 @@ class RemoteDataSource(
         TODO("Not yet implemented")
     }
 
-    override suspend fun insertDateTime(alertDateTime: AlertDateTime) {
+    override suspend fun getDateTime(id: Int): AlertDateTime {
         TODO("Not yet implemented")
     }
 
-    override suspend fun deleteDateTime(alertDateTime: AlertDateTime) {
+    override suspend fun insertDateTime(alertDateTime: AlertDateTime): Long {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteDateTime(id: Int) {
         TODO("Not yet implemented")
     }
 

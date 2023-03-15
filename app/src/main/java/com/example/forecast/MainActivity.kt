@@ -18,6 +18,7 @@ import android.widget.TextView
 import android.widget.Toast
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -25,6 +26,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.forecast.data.utils.Constants.Companion.LATITUDE
 import com.example.forecast.data.utils.Constants.Companion.LONGITUDE
+import com.example.forecast.data.utils.Constants.Companion.MODE
 import com.example.forecast.data.utils.Constants.Companion.PERMISSION_ID
 import com.example.forecast.data.utils.Constants.Companion.SHARED_PREFERENCE
 import com.example.forecast.databinding.ActivityMainBinding
@@ -48,7 +50,6 @@ class MainActivity : AppCompatActivity() {
         val appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.homeFragment,
-                R.id.weekFragment,
                 R.id.favoritesFragment,
                 R.id.notificationsFragment,
                 R.id.settingsFragment
@@ -57,7 +58,10 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
+        supportActionBar?.hide()
+
         getLastLocation()
+        initAppTheme()
     }
 
     private fun getLastLocation() {
@@ -183,5 +187,18 @@ class MainActivity : AppCompatActivity() {
 
         countryName = address!![0].countryName
         return countryName
+    }
+
+    private fun initAppTheme() {
+        val sharedPreferences: SharedPreferences =
+            getSharedPreferences(SHARED_PREFERENCE, Context.MODE_PRIVATE)
+        val mode = sharedPreferences.getString(MODE, "Light")
+
+        if (mode == "Dark") {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+
     }
 }

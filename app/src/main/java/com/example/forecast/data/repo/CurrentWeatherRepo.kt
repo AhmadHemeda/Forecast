@@ -1,6 +1,7 @@
 package com.example.forecast.data.repo
 
 import android.app.Application
+import android.content.Context
 import com.example.forecast.data.db.LocalDataSource
 import com.example.forecast.data.db.WeatherDataBase
 import com.example.forecast.data.model.custom.CurrentWeather
@@ -17,6 +18,22 @@ class CurrentWeatherRepo(
         fun getInstance(application: Application): CurrentWeatherRepo {
             return INSTANCE ?: synchronized(this) {
                 val dataBase = WeatherDataBase.getInstance(application)
+
+                val localSource = LocalDataSource(
+                    currentWeatherDao = dataBase.getCurrentWeatherDao(),
+                    favoriteCityDAO = dataBase.getFavoriteCityDao(),
+                    alertDateTimeDao = dataBase.getAlertDateTimeDao()
+                )
+
+                CurrentWeatherRepo(
+                    localDataSource = localSource
+                )
+            }
+        }
+
+        fun getInstance(context: Context): CurrentWeatherRepo {
+            return INSTANCE ?: synchronized(this) {
+                val dataBase = WeatherDataBase.getInstance(context)
 
                 val localSource = LocalDataSource(
                     currentWeatherDao = dataBase.getCurrentWeatherDao(),

@@ -1,6 +1,7 @@
 package com.example.forecast.data.repo
 
 import android.app.Application
+import android.content.Context
 import com.example.forecast.data.db.LocalDataSource
 import com.example.forecast.data.db.WeatherDataBase
 import com.example.forecast.data.model.custom.AlertDateTime
@@ -29,17 +30,37 @@ class NotificationRepo(
                 )
             }
         }
+
+        fun getInstance(context: Context): NotificationRepo {
+            return INSTANCE ?: synchronized(this) {
+                val dataBase = WeatherDataBase.getInstance(context)
+
+                val localSource = LocalDataSource(
+                    currentWeatherDao = dataBase.getCurrentWeatherDao(),
+                    favoriteCityDAO = dataBase.getFavoriteCityDao(),
+                    alertDateTimeDao = dataBase.getAlertDateTimeDao()
+                )
+
+                NotificationRepo(
+                    localDataSource = localSource
+                )
+            }
+        }
     }
 
     override fun getAllDatesTimes(): Flow<List<AlertDateTime>> {
         return localDataSource.getAllDatesTimes()
     }
 
-    override suspend fun insertDateTime(alertDateTime: AlertDateTime) {
-        localDataSource.insertDateTime(alertDateTime)
+    override suspend fun getDateTime(id: Int): AlertDateTime {
+        return localDataSource.getDateTime(id)
     }
 
-    override suspend fun deleteDateTime(alertDateTime: AlertDateTime) {
-        localDataSource.deleteDateTime(alertDateTime)
+    override suspend fun insertDateTime(alertDateTime: AlertDateTime): Long {
+        return localDataSource.insertDateTime(alertDateTime)
+    }
+
+    override suspend fun deleteDateTime(id: Int) {
+        localDataSource.deleteDateTime(id)
     }
 }

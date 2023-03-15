@@ -1,4 +1,4 @@
-package com.example.forecast.data.db
+package com.example.forecast.data.db.dao
 
 import androidx.room.*
 import com.example.forecast.data.model.custom.CurrentWeather

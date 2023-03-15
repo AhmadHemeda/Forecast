@@ -65,7 +65,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val latLng = LatLng(23.0, 24.0)
 
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng))
-
         mMap.setOnMapClickListener { latLng ->
             val markerOptions = MarkerOptions()
 
@@ -76,30 +75,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 latLng.longitude, 1
             ) as List<Address>
 
-            val cityName: String = if (addresses[0].adminArea.isNullOrEmpty()) {
+            val cityName: String = if (addresses[0].locality.isNullOrEmpty()) {
                 getCityName(latLng.latitude, latLng.longitude)
             } else {
-                addresses[0].adminArea
+                addresses[0].locality
             }
 
-            // Setting the position for the marker
             markerOptions.position(latLng)
-
-            // Setting title for info window
             markerOptions.title("Latitude: ${latLng.latitude}, Longitude: ${latLng.longitude}")
 
-            // Clears any existing markers from the Google Map
             googleMap.clear()
-
-            // Placing a marker on touched position
             googleMap.addMarker(markerOptions)
 
             alertDialog.show()
 
             textViewTitle = dialogView.findViewById(R.id.textView_title)
-            textViewTitle.text = "${latLng.latitude}"
+            textViewTitle.text = "Click save to add $cityName in your favorites"
 
             buttonSave = dialogView.findViewById(R.id.button_save)
+
             buttonSave.setOnClickListener {
                 favoritesViewModel.viewModelScope.launch {
                     favoritesViewModel.insertCity(
@@ -119,7 +113,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val geoCoder = Geocoder(this, Locale.getDefault())
         val address = geoCoder.getFromLocation(lat, long, 3)
 
-        cityName = address!![0].adminArea
+        cityName = address?.get(0)?.locality ?: "Unkonwn"
         return cityName
     }
 }
